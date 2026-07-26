@@ -44,6 +44,7 @@ return {
   RenderingSystem = require("systems.rendering"),
   ProjectileSystem = require("systems.projectile_system"),
   LaserSystem = require("systems.laser_system"),
+  BeamSystem = require("systems.beam_system"),
   PulseSystem = require("systems.pulse_system"),
   DamageSystem = require("systems.damage_system"),
   PickupSystem = require("systems.pickup"),

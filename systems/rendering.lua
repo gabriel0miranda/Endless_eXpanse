@@ -1,9 +1,9 @@
 local Rendering = {}
 
 local STAR_LAYERS = {
-  { cellSize = 900, starsPerCell = 2, parallax = 0.05, sizeRange = {0.5, 1.0}, color = {0.55, 0.6, 0.75, 0.5} },
-  { cellSize = 1000, starsPerCell = 3, parallax = 0.15, sizeRange = {0.8, 1.6}, color = {0.7, 0.75, 0.9, 0.7} },
-  { cellSize = 1200, starsPerCell = 1, parallax = 0.35, sizeRange = {1.2, 2.4}, color = {0.9, 0.92, 1.0, 0.9} },
+  { cellSize = 900, starsPerCell = 2, parallax = 0.05, sizeRange = {0.2, 0.6}, color = {0.55, 0.6, 0.75, 0.5} },
+  { cellSize = 1000, starsPerCell = 3, parallax = 0.15, sizeRange = {0.4, 1.0}, color = {0.7, 0.75, 0.9, 0.7} },
+  { cellSize = 1200, starsPerCell = 1, parallax = 0.35, sizeRange = {0.6, 1.2}, color = {0.9, 0.92, 1.0, 0.9} },
 }
 
 -- Hash determinístico simples — mesma célula sempre gera as mesmas estrelas.
@@ -69,34 +69,82 @@ local function drawParallaxBackground(camera)
   love.graphics.setColor(1, 1, 1, 1)
 end
 
-local function drawWorldLayer()
-  -- Draw all entities that have a draw method
-  for _, entity in ipairs(config.Entities.all) do
-    if entity.draw then
-      entity:draw()
-    elseif entity.fixtures then
+local function drawLandables()
+  for _, landable in ipairs(config.Entities.getByTag("landable")) do
+    if landable.sprite then
+      love.graphics.setColor(landable.sprite.color or {0,1,0})
+      if landable.sprite.shapeType == "Circle" then
+        if landable.rigidbody then
+          love.graphics.circle("fill",
+            landable.rigidbody.body:getX(),
+            landable.rigidbody.body:getY(),
+            landable.sprite.shape:getRadius())
+        else
+          love.graphics.circle("fill", landable.x, landable.y,
+            landable.sprite.shape:getRadius())
+        end
+      elseif landable.sprite.shapeType == "Polygon" then
+        love.graphics.polygon("fill",
+          landable.rigidbody.body:getWorldPoints(landable.sprite.shape:getPoints()))
+      end
+    end
+  end
+end
+
+local function drawShips()
+  for _, ship in ipairs(config.Entities.getByTag("ship")) do
+    if ship.draw then
+      ship:draw()
+    elseif ship.fixtures then
       -- Nave multi-part: desenha cada fixture com sua própria cor
-      for _, part in ipairs(entity.fixtures) do
+      for _, part in ipairs(ship.fixtures) do
         love.graphics.setColor(part.color)
         love.graphics.polygon("fill",
-          entity.rigidbody.body:getWorldPoints(part.shape:getPoints()))
+          ship.rigidbody.body:getWorldPoints(part.shape:getPoints()))
       end
+    end
+  end
+end
 
-    elseif entity.sprite then
-      love.graphics.setColor(entity.sprite.color or {0,1,0})
-      if entity.sprite.shapeType == "Circle" then
-        if entity.rigidbody then
+local function drawAsteroids()
+  for _, asteroid in ipairs(config.Entities.getByTag("asteroid")) do
+    if asteroid.sprite then
+      love.graphics.setColor(asteroid.sprite.color or {0,1,0})
+      if asteroid.sprite.shapeType == "Circle" then
+        if asteroid.rigidbody then
           love.graphics.circle("fill",
-            entity.rigidbody.body:getX(),
-            entity.rigidbody.body:getY(),
-            entity.sprite.shape:getRadius())
+            asteroid.rigidbody.body:getX(),
+            asteroid.rigidbody.body:getY(),
+            asteroid.sprite.shape:getRadius())
         else
-          love.graphics.circle("fill", entity.x, entity.y,
-            entity.sprite.shape:getRadius())
+          love.graphics.circle("fill", asteroid.x, asteroid.y,
+            asteroid.sprite.shape:getRadius())
         end
-      elseif entity.sprite.shapeType == "Polygon" then
+      elseif asteroid.sprite.shapeType == "Polygon" then
         love.graphics.polygon("fill",
-          entity.rigidbody.body:getWorldPoints(entity.sprite.shape:getPoints()))
+          asteroid.rigidbody.body:getWorldPoints(asteroid.sprite.shape:getPoints()))
+      end
+    end
+  end
+end
+
+local function drawFloatsome()
+  for _, floatsome in ipairs(config.Entities.getByTag("floatsome")) do
+    if floatsome.sprite then
+      love.graphics.setColor(floatsome.sprite.color or {0,1,0})
+      if floatsome.sprite.shapeType == "Circle" then
+        if floatsome.rigidbody then
+          love.graphics.circle("fill",
+            floatsome.rigidbody.body:getX(),
+            floatsome.rigidbody.body:getY(),
+            floatsome.sprite.shape:getRadius())
+        else
+          love.graphics.circle("fill", floatsome.x, floatsome.y,
+            floatsome.sprite.shape:getRadius())
+        end
+      elseif floatsome.sprite.shapeType == "Polygon" then
+        love.graphics.polygon("fill",
+          floatsome.rigidbody.body:getWorldPoints(floatsome.sprite.shape:getPoints()))
       end
     end
   end
@@ -123,42 +171,74 @@ end
 local function drawLaser()
   for _, laser in ipairs(config.Entities.getByTag("laser")) do
     local c = laser.color
-    local fadeT = laser.lifetime / (laser.maxLifetime or laser.lifetime)
     local dirX = math.cos(laser.angle)
     local dirY = math.sin(laser.angle)
-    local endX = laser.x + dirX * laser.range
-    local endY = laser.y + dirY * laser.range
-    if laser.hitX == nil then
-      laser.hitX = endX
-    end
-    if laser.hitY == nil then
-      laser.hitY = endY
-    end
+    local endX = laser.hitX or (laser.x + dirX * laser.lenght)
+    local endY = laser.hitY or (laser.y + dirY * laser.lenght)
 
     -- Halo externo (largo, fraco)
-    love.graphics.setColor(c[1], c[2], c[3], 0.15 * fadeT)
+    love.graphics.setColor(c[1], c[2], c[3], 0.15)
     love.graphics.setLineWidth(8)
-    love.graphics.line(laser.x, laser.y, laser.hitX, laser.hitY)
+    love.graphics.line(laser.x, laser.y, endX, endY)
 
     -- Halo médio
-    love.graphics.setColor(c[1], c[2], c[3], 0.35 * fadeT)
+    love.graphics.setColor(c[1], c[2], c[3], 0.35)
     love.graphics.setLineWidth(4)
-    love.graphics.line(laser.x, laser.y, laser.hitX, laser.hitY)
+    love.graphics.line(laser.x, laser.y, endX, endY)
 
     -- Núcleo brilhante (quase branco)
     love.graphics.setColor(
       math.min(1, c[1] + 0.5),
       math.min(1, c[2] + 0.5),
       math.min(1, c[3] + 0.5),
-      fadeT)
+      1)
     love.graphics.setLineWidth(1.5)
-    love.graphics.line(laser.x, laser.y, laser.hitX, laser.hitY)
+    love.graphics.line(laser.x, laser.y, endX, endY)
 
     love.graphics.setLineWidth(1)
 
     -- Flash no ponto de impacto
-    love.graphics.setColor(c[1], c[2], c[3], 0.6 * fadeT)
-    love.graphics.circle("fill", laser.hitX, laser.hitY, 4 * fadeT)
+    love.graphics.setColor(c[1], c[2], c[3], 0.6)
+    love.graphics.circle("fill", endX, endY, 4)
+  end
+end
+
+local function drawBeam()
+  for _, beam in ipairs(config.Entities.getByTag("beam")) do
+    local c = beam.color
+    local dirX = math.cos(beam.angle)
+    local dirY = math.sin(beam.angle)
+    local endX = beam.hitX or (beam.x + dirX * beam.range)
+    local endY = beam.hitY or (beam.y + dirY * beam.range)
+    local dx, dy = endX - beam.x, endY - beam.y
+    local dist   = math.sqrt(dx*dx + dy*dy)
+
+    -- Halo externo (largo, fraco)
+    love.graphics.setColor(c[1], c[2], c[3], 0.15)
+    love.graphics.setLineWidth(8)
+    love.graphics.line(beam.x, beam.y, endX, endY)
+
+    -- Halo médio
+    love.graphics.setColor(c[1], c[2], c[3], 0.35)
+    love.graphics.setLineWidth(4)
+    love.graphics.line(beam.x, beam.y, endX, endY)
+
+    -- Núcleo brilhante (quase branco)
+    love.graphics.setColor(
+      math.min(1, c[1] + 0.5),
+      math.min(1, c[2] + 0.5),
+      math.min(1, c[3] + 0.5),
+      1)
+    love.graphics.setLineWidth(1.5)
+    love.graphics.line(beam.x, beam.y, endX, endY)
+
+    love.graphics.setLineWidth(1)
+
+    -- Flash no ponto de impacto
+    if beam.hitX then
+      love.graphics.setColor(c[1], c[2], c[3], 0.6)
+      love.graphics.circle("fill", endX, endY, 200/math.sqrt(dist))
+    end
   end
 end
 
@@ -317,12 +397,16 @@ end
 function Rendering.draw(playerFlagShip, camera)
     drawParallaxBackground(camera)
     camera:attach()
-        drawWorldLayer()
-        drawExplosion()
+        drawLandables()
         drawPulse()
         drawMine()
         drawProjectiles()
         drawLaser()
+        drawBeam()
+        drawAsteroids()
+        drawShips()
+        drawFloatsome()
+        drawExplosion()
         drawTargetReticule(camera)
     camera:detach()
     drawHUD(playerFlagShip,camera)

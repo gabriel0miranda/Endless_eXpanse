@@ -76,6 +76,26 @@ end
 
 local function fire_laser(owner, weapon, x, y, angle)
   config.Entities.create("laser", {
+    x          = x,
+    y          = y,
+    angle      = angle,
+    range      = weapon.def.range,
+    damage     = weapon.def,
+    color      = weapon.def.color,
+    owner      = owner,
+    hitX       = nil,
+    hitY       = nil,
+    firedFromX = x,
+    firedFromY = y,
+    lenght     = weapon.def.lenght,
+  })
+
+  weapon.capacitor.current = 0
+end
+
+local function fire_beam(owner, weapon, x, y, angle)
+  if weapon.beam then return end
+  local beam = config.Entities.create("beam", {
     x        = x,
     y        = y,
     angle    = angle,
@@ -83,12 +103,10 @@ local function fire_laser(owner, weapon, x, y, angle)
     damage   = weapon.def,
     color    = weapon.def.color,
     owner    = owner,
-    lifetime = 0.02,
     hitX     = nil,
     hitY     = nil,
   })
-
-  weapon.capacitor.current = weapon.capacitor.current - weapon.capacitor.drain
+  weapon.beam = beam
 end
 
 local fireFunctions = {
@@ -97,7 +115,7 @@ local fireFunctions = {
     laser      = fire_laser,
     mine       = fire_mine,
     pulse      = fire_pulse,
-    drill      = fire_laser,
+    beam      = fire_beam,
 }
 
 -- ─────────────────────────────────────────
@@ -165,7 +183,7 @@ local function applyIntent(e, dt)
 
   local x, y
   if e.rigidbody and e.rigidbody.body and not e.rigidbody.body:isDestroyed() then
-    x, y = e.rigidbody.body:getPosition()
+    x, y = e.rigidbody.body:getWorldCenter()
   else
     x, y = e.x or 0, e.y or 0
   end

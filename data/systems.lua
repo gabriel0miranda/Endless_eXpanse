@@ -1,7 +1,7 @@
-local NORTH = {x=0,y=-6000}
-local SOUTH = {x=0,y=6000}
-local WEST = {x=-6000,y=0}
-local EAST = {x=6000,y=0}
+local NORTH = {x=0,y=-12000}
+local SOUTH = {x=0,y=12000}
+local WEST = {x=-12000,y=0}
+local EAST = {x=12000,y=0}
 
 return {
   [1] = {

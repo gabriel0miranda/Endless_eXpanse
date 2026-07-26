@@ -52,7 +52,7 @@ return {
     price = 1400,
     cargo       = 500,
     movement    = { linearAcceleration=800, strafeAcceleration=800, angularAcceleration=1200, linearDamping=0.8, angularDampingFactor=0.9 },
-    weapons = {[1] = "Photon Cannon", [2] = "Predator Missile", [3] = "Proximity Mine"},
+    weapons = {[1] = "Mining Laser", [2] = "Predator Missile", [3] = "Proximity Mine"},
     generatorPower = 45,
     shields     = {capacity=180,cooldown=3},
     hull        = 250,

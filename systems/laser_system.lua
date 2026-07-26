@@ -2,7 +2,6 @@ local LaserSystem = {}
 
 local function resolveHit(laser)
   if laser.hitX then return end
-
   local dirX = math.cos(laser.angle)
   local dirY = math.sin(laser.angle)
   local endX = laser.x + dirX * laser.range
@@ -27,8 +26,10 @@ local function resolveHit(laser)
     end
   )
 
-  laser.hitX = hitX
-  laser.hitY = hitY
+  if hitEntity then
+    laser.hitX = hitX
+    laser.hitY = hitY
+  end
 
   local falloff = 1.0 - (closestFraction*0.8)
   if hitEntity then
@@ -42,11 +43,20 @@ end
 
 function LaserSystem.update(dt)
   for _, laser in ipairs(config.Entities.getByTag("laser")) do
-    laser.lifetime = laser.lifetime - dt
-    if laser.lifetime <= 0 then
+    local dirX = math.cos(laser.angle)
+    local dirY = math.sin(laser.angle)
+    local endX = laser.firedFromX + dirX * laser.range
+    local endY = laser.firedFromY + dirY * laser.range
+    local tipX = laser.x + dirX * laser.lenght
+    local tipY = laser.y + dirY * laser.lenght
+    local dx, dy = endX - tipX, endY - tipY
+    local dist   = math.sqrt(dx*dx + dy*dy)
+    if dist <= laser.lenght or laser.hitX or not laser.owner or not laser.owner.rigidbody or not laser.owner.rigidbody.body or laser.owner.rigidbody.body:isDestroyed() then
       config.Entities.remove(laser)
     else
       resolveHit(laser)
+      laser.x = laser.x + (endX - laser.firedFromX)*dt
+      laser.y = laser.y + (endY - laser.firedFromY)*dt
     end
   end
 end
