@@ -35,6 +35,7 @@ return {
   PropertyUI  = require("ui.property_ui"),
   DialogueUI  = require("ui.dialogue_ui"),
   HudUI  = require("ui.hud_ui"),
+  MapUI  = require("ui.map_ui"),
   CommunicationUI  = require("ui.communication_ui"),
   CommunicationSystem = require("systems.communication_system"),
   MiningSystem = require("systems.mining"),
@@ -85,4 +86,5 @@ return {
   StarEntity = require("entities.star"),
   AsteroidEntity = require("entities.asteroid"),
   WormholeEntity = require("entities.wormholes"),
+  ExplosionEntity = require("entities.explosion"),
 }

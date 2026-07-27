@@ -113,6 +113,7 @@ function Dead.onEnter()
     generateStars()
     recalcGeometry()
     hoveredBtn = 1
+    config.Entities.clear()
 end
 
 function Dead.onExit()

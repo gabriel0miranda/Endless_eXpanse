@@ -412,6 +412,7 @@ function Landed.onEnter()
     love.mouse.setRelativeMode(false)
     playerFlagShip = config.Entities.with("isFlagShip")[1]
     player = config.Entities.getByTag("player")[1]
+    config.TargetingSystem.current = nil
 
     -- Transição de wormhole
     if playerFlagShip.landedAt and playerFlagShip.landedAt.toSystem then

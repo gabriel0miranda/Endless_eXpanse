@@ -73,6 +73,10 @@ function Playing.update(dt)
   if config.Input.state.paused then return end
   if not playerFlagShip or not playerFlagShip.rigidbody or not playerFlagShip.rigidbody.body or playerFlagShip.rigidbody.body:isDestroyed() then return end
 
+  if config.Input.state.ui_map then
+    config.MapUI.toggle(playerFlagShip)
+  end
+
   local ast_hash = config.SpatialHash.build(config.Entities.getByTag("asteroid"),rigidbody_pos,shape_radius,config.CELL_SIZE)
 
   local floatsome_hash = config.SpatialHash.build(config.Entities.getByTag("floatsome"),obj_pos,obj_radius,config.CELL_SIZE)
@@ -92,7 +96,7 @@ function Playing.update(dt)
   config.BeamSystem.update(dt)
   config.PulseSystem.update(ship_hash,ast_hash,dt)
   config.MineSystem.update(ship_hash,ast_hash,dt)
-  config.ExplosionSystem.update(dt)
+  config.ExplosionSystem.update(ship_hash, ast_hash, dt)
   config.DamageSystem.update(dt)
   config.FloatsomeSystem.update(dt)
 
@@ -164,6 +168,10 @@ function Playing.textinput(t)
 end
 
 function Playing.keypressed(key)
+  if config.MapUI.isOpen() then
+    config.MapUI.keypressed(key)
+    return
+  end
   if config.TextInputUI.isOpen() then
     config.TextInputUI.keypressed(key)
     return
@@ -204,6 +212,10 @@ function Playing.mousemoved(x,y,dx,dy,istouch)
 end
 
 function Playing.mousepressed(mx, my, button)
+  if config.MapUI.isOpen() then
+    config.MapUI.mousepressed(mx, my, button)
+    return
+  end
   if config.TextInputUI.isOpen() then
     config.TextInputUI.mousepressed(mx, my, button)
     return
@@ -239,6 +251,10 @@ function Playing.mousepressed(mx, my, button)
 end
 
 function Playing.wheelmoved(dx, dy)
+  if config.MapUI.isOpen() then
+    config.MapUI.wheelmoved(dx, dy)
+    return
+  end
   if config.SelectUI.isOpen() then
     config.SelectUI.wheelmoved(dx, dy)
     return
@@ -269,7 +285,11 @@ function Playing.wheelmoved(dx, dy)
 end
 
 function Playing.draw()
-  config.RenderingSystem.draw(playerFlagShip, config.Camera)
+  if config.MapUI.isOpen() then
+    config.MapUI.draw(playerFlagShip)
+  else
+    config.RenderingSystem.draw(playerFlagShip, config.Camera)
+  end
 end
 
 return Playing

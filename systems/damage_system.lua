@@ -15,6 +15,14 @@ function DamageSystem.update(dt)
   for _, ship in ipairs(config.Entities.getByTag("ship")) do
     if ship.hull.currentHealth <= 0 then
       if ship.hull.currentHealth <= ship.hull.health*-1 then
+        config.ExplosionEntity(nil,
+          ship.rigidbody.body:getX(),
+          ship.rigidbody.body:getY(),
+          ship.rigidbody.fixture:getShape():getRadius()+200,
+          1,1,
+          {shieldDamage=ship.hull.health,
+           hullDamage=ship.hull.health}
+         )
         config.Entities.remove(ship)
       else
         ship.disabled = true

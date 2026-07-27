@@ -53,7 +53,7 @@ local function fire_mine(owner, weapon, x, y, angle)
     color           = weapon.def.color,
     owner           = owner,
     armTime         = weapon.def.armTime,
-    indicator       = {color = {0,0.3,0.7,0.2}}
+    indicator       = {color = {0,0.3,0.7,0.2}},
   })
 
   weapon.capacitor.current = 0
