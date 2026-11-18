@@ -103,7 +103,14 @@ local function executeAction(action)
       }
     )
   elseif action == "cont" then
-      -- TODO: implementar save/load
+      local ok, err = config.SaveManager.load()
+      if not ok then
+        config.DialogueUI.open({
+          speaker = "Continuar",
+          text = err,
+          onConfirm = function(option) end,
+        })
+      end
   elseif action == "control" then
       config.DialogueUI.open({
         speaker = "Controles",

@@ -51,6 +51,14 @@ function love.gamepadaxis(joystick, axis, value)
   config.Input.gamepadaxis(axis, value)
 end
 
+-- Fechar o jogo pousado salva o que mudou desde o pouso
+love.quit = function()
+  if config.GameState.current == "landed" and config.SaveManager.canSave() then
+    config.SaveManager.save()
+  end
+  return false
+end
+
 love.update = function(dt)
   config.Input.beginFrame()
   config.GameState.update(dt)

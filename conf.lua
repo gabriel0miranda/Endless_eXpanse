@@ -1,5 +1,6 @@
 love.conf = function(t)
   t.console = true
+  t.identity = "endless_expanse"  -- pasta dos saves: ~/.local/share/love/endless_expanse
   t.window.title = "Endless eXpanse"
   t.window.resizable = true
   t.window.minwidth = 480
