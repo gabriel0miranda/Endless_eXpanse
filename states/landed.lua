@@ -417,7 +417,7 @@ function Landed.onEnter()
     -- Transição de wormhole
     if playerFlagShip.landedAt and playerFlagShip.landedAt.toSystem then
       local targetSystem      = playerFlagShip.landedAt.toSystem
-      local currentSystemName = config.WorldManager.systems[config.WorldManager.currentSystemId].name
+      local currentSystemName = config.WorldManager.systems[config.WorldState.currentSystemId()].name
       config.WorldManager.loadSystem(targetSystem)
       playerFlagShip = config.Entities.with("isFlagShip")[1]
       local entries = config.WorldManager.systems[targetSystem].wormholes or {}

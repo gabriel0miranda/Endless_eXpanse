@@ -19,9 +19,6 @@ local SNAP = 0.002
 
 local accumulator = 0
 
--- Tempo total simulado, em segundos (base para o futuro calendário do jogo)
-Simulation.time = 0
-
 -- Descarta o tempo acumulado; chamar ao entrar num estado que simula o mundo
 function Simulation.reset()
   accumulator = 0
@@ -41,7 +38,6 @@ function Simulation.advance(dt, step)
       hiddenPulses = config.Input.hidePulses()
     end
     accumulator = accumulator - Simulation.STEP
-    Simulation.time = Simulation.time + Simulation.STEP
     steps = steps + 1
     if step(Simulation.STEP) == false then break end
   end

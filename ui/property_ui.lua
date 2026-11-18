@@ -123,8 +123,8 @@ local function buildRows()
                 local bx, by = e.rigidbody.body:getPosition()
                 loc = string.format("%.0f, %.0f", bx, by)
             end
-            if config.WorldManager and config.WorldManager.currentSystemId then
-                local sys = config.WorldManager.systems[config.WorldManager.currentSystemId]
+            if config.WorldState.currentSystemId() then
+                local sys = config.WorldManager.systems[config.WorldState.currentSystemId()]
                 if sys then loc = sys.name .. " · " .. loc end
             end
 

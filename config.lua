@@ -24,6 +24,7 @@ return {
   DeadState = require('states.dead'),
   WorldManager = require("managers.world_manager"),
   Simulation = require("managers.simulation"),
+  WorldState = require("managers.world_state"),
   SpatialHash = require("utils.spatial_hash"),
   TableConcat = require("utils.table_concat"),
   DumpTable = require("utils.dump_table"),

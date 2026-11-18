@@ -104,6 +104,7 @@ local function simulationStep(dt)
 
   local ship_hash = config.SpatialHash.build(config.Entities.getByTag("ship"),rigidbody_pos,shape_radius,config.CELL_SIZE)
 
+  config.WorldState.advance(dt)
   config.ShipMovementSystem.update(playerFlagShip, dt)
   config.NpcAISystem.update(playerFlagShip, floatsome_hash, dt)
   config.GravityPullSystem.update(dt)

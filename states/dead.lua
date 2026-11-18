@@ -159,6 +159,7 @@ end
 local function worldStep(dt)
   local ship_hash = config.SpatialHash.build(config.Entities.getByTag("ship"),rigidbody_pos,shape_radius,config.CELL_SIZE)
   local ast_hash  = config.SpatialHash.build(config.Entities.getByTag("asteroid"),rigidbody_pos,shape_radius,config.CELL_SIZE)
+  config.WorldState.advance(dt)  -- os planetas continuam orbitando ao fundo
   config.LandableMovementSystem.update(dt)
   config.ProjectileSystem.update(ship_hash, ast_hash, dt)
   config.LaserSystem.update(dt)

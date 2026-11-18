@@ -1,43 +1,64 @@
-local function randomPointOnOrbit(cx, cy, r, orbit_angle)
-  if cx == nil or cy == nil or r == nil or orbit_angle == nil then return nil end
-  local theta = love.math.random() * 2 * math.pi  -- ângulo aleatório na órbita
-
-  -- Posição local na órbita (sem inclinação)
-  local lx = math.cos(theta) * r
-  local ly = math.sin(theta) * r
-
-  -- Rotaciona pela inclinação da órbita
-  local x = lx * math.cos(orbit_angle) - ly * math.sin(orbit_angle)
-  local y = lx * math.sin(orbit_angle) + ly * math.cos(orbit_angle)
-
-  return cx + x, cy + y
+-- Ângulo da órbita no instante `time`: a posição é função do relógio do mundo,
+-- então o planeta continua girando mesmo com o jogador em outro sistema.
+local function orbitAngleAt(phase, orbitSpeed, time)
+  return phase + orbitSpeed * time
 end
 
-return function(star,landables)
+-- Primeira visita: sorteia a fase orbital (ou a deduz de x/y fixos nos dados)
+local function newRecord(star, landable_data)
+  local phase
+  if landable_data.orbitRadius then
+    phase = love.math.random() * 2 * math.pi
+  else
+    phase = math.atan2((landable_data.y or 0) - star.y, (landable_data.x or 0) - star.x)
+  end
+  return { phase = phase }
+end
+
+-- Mercado da entidade: dados fixos vêm de config.Landables; preços e estoque,
+-- se a estação já foi visitada, vêm do registro no WorldState.
+local function buildMarket(landable_data, record)
+  local market = {
+    generated = false,
+    prices = {},
+    capacity = landable_data.market and landable_data.market.capacity or 0,
+    stock = landable_data.market and landable_data.market.stock or {},
+    demanded = landable_data.market and landable_data.market.demanded or {}
+  }
+  local inventory = nil
+  if record.market then
+    market.generated = true
+    market.prices = record.market.prices
+    inventory = config.InventoryComponent(record.market.capacity, record.market.items)
+  end
+  return market, inventory
+end
+
+return function(star, landables, systemId)
   for _, landable in ipairs(landables or {}) do
-    -- config.Landables é só leitura: a posição sorteada fica apenas na entidade
+    -- config.Landables é só leitura: o que muda em jogo fica no WorldState
     local landable_data = config.Landables[landable]
-    local x,y = randomPointOnOrbit(star.x, star.y, landable_data.orbitRadius, landable_data.orbitAngle)
-    if x == nil or y == nil then
-      x, y = landable_data.x, landable_data.y
+    local record = config.WorldState.landable(systemId, landable)
+    if not record then
+      record = newRecord(star, landable_data)
+      config.WorldState.setLandable(systemId, landable, record)
     end
-    local orbitRadius = landable_data.orbitRadius or math.sqrt((x - star.x)^2 + (y - star.y)^2)
-    local orbitAngle = math.atan2(y - star.y, x - star.x)
+
+    local orbitRadius = landable_data.orbitRadius
+      or math.sqrt(((landable_data.x or 0) - star.x)^2 + ((landable_data.y or 0) - star.y)^2)
+    local orbitSpeed = landable_data.orbitSpeed or 0.0005
+    local orbitAngle = orbitAngleAt(record.phase, orbitSpeed, config.WorldState.time())
+    local x = star.x + orbitRadius * math.cos(orbitAngle)
+    local y = star.y + orbitRadius * math.sin(orbitAngle)
+
     local sprite = config.SpriteComponent(landable_data.color,love.physics.newCircleShape(x,y,landable_data.radius),"Circle")
-    local market = {
-        generated = false,
-        prices = {},
-        capacity = landable_data.market and  landable_data.market.capacity or 0,
-        stock = landable_data.market and landable_data.market.stock or {},
-        demanded = landable_data.market and landable_data.market.demanded or {}
-    }
+    local market, inventory = buildMarket(landable_data, record)
 
     local shipyard = {
         generated = false,
         prices = {},
         stock = landable_data.shipyard and landable_data.shipyard.stock or {},
     }
-    local orbitSpeed = landable_data.orbitSpeed or 0.0005
     config.Entities.create("landable",{
       name=landable,
       x=x,
@@ -45,12 +66,13 @@ return function(star,landables)
       radius=landable_data.radius,
       sprite=sprite,
       market=market,
+      inventory=inventory,
       shipyard=shipyard,
       orbitRadius=orbitRadius,
+      orbitPhase=record.phase,
       orbitAngle=orbitAngle,
       orbitSpeed=orbitSpeed,
       layer = 0
     })
   end
 end
-
