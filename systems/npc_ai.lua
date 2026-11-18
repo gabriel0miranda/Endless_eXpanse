@@ -3,9 +3,32 @@ local NpcAI = {}
 local ATTACK_RANGE   = 1000
 local PATROL_RADIUS  = 8000
 local IDLE_TIMER = 15  -- segundos em idle antes de escolher novo waypoint
-local RNG = love.math.newRandomGenerator(os.time())
+
+-- Estado de trabalho de cada papel (campo `role` em npc_profiles); sem papel, patrulha
+local ROLE_STATES = {
+  miner  = "mining",
+  hauler = "hauling",
+  taxi   = "taxi",
+}
 
 -- helpers 
+
+local function default_state(npc)
+  local role = npc.profile and npc.profile.role
+  return ROLE_STATES[role] or "patrolling"
+end
+
+-- Raio do alvo para calcular a aproximação. Só landables têm sprite.shape;
+-- naves usam sprite multi-part ({ shipType = ... }) e devolvem nil.
+local function target_radius(target)
+  local shape = target and target.sprite and target.sprite.shape
+  return shape and shape:getRadius() or nil
+end
+
+local function body_alive(entity)
+  return entity and entity.rigidbody and entity.rigidbody.body
+     and not entity.rigidbody.body:isDestroyed()
+end
 
 local function dist2(ax, ay, bx, by)
   local dx, dy = ax - bx, ay - by
@@ -41,36 +64,31 @@ end
 -- estados passivos
 
 local function state_idle(npc, ai, dt)
-  if ai.target and ai.target.sprite then
-    set_npc_intent(npc, ai.waypoint.x, ai.waypoint.y,ai.target.sprite.shape:getRadius())
+  if ai.waypoint and target_radius(ai.target) then
+    set_npc_intent(npc, ai.waypoint.x, ai.waypoint.y, target_radius(ai.target))
   end
   clear_weapon_intent(npc)
   ai.timer = ai.timer - dt
   if ai.timer <= 0 then
     ai.target = nil
-    if npc.name == "Miner" then
-      ai.state = "mining"
-    elseif npc.name == "Hauler" then
-      ai.state = "hauling"
-    elseif npc.name == "Taxi" then
-      ai.state = "taxi"
-    else
-      ai.state = "patrolling"
-    end
+    ai.state = default_state(npc)
   end
 end
 
 local function state_patrolling(npc, ai, dt)
   local nx, ny = npc.ship.rigidbody.body:getPosition()
-  ai.waypoint = {
-    x = nx + math.random(-PATROL_RADIUS, PATROL_RADIUS),
-    y = ny + math.random(-PATROL_RADIUS, PATROL_RADIUS),
-  }
+  if not ai.waypoint then
+    ai.waypoint = {
+      x = nx + math.random(-PATROL_RADIUS, PATROL_RADIUS),
+      y = ny + math.random(-PATROL_RADIUS, PATROL_RADIUS),
+    }
+  end
   clear_weapon_intent(npc)
   set_npc_intent(npc, ai.waypoint.x, ai.waypoint.y)
 
   -- chegou perto o suficiente? volta pra idle
   if dist2(nx, ny, ai.waypoint.x, ai.waypoint.y) < 60*60 then
+    ai.waypoint = nil
     ai.timer = math.random(5, IDLE_TIMER)
     ai.state = "idle"
   end
@@ -106,15 +124,7 @@ local function state_trading(npc, ai, dt)
   ai.timer = ai.timer - dt
   if ai.timer <= 0 then
     ai.target = nil
-    if npc.name == "Miner" then
-      ai.state = "mining"
-    elseif npc.name == "Hauler" then
-      ai.state = "hauling"
-    elseif npc.name == "Taxi" then
-      ai.state = "taxi"
-    else
-      ai.state = "patrolling"
-    end
+    ai.state = default_state(npc)
   end
 end
 
@@ -146,6 +156,11 @@ local function state_mining(npc, ai, dt)
   local nx, ny = npc.ship.rigidbody.body:getPosition()
   if not ai.target or ai.target.tag ~= "asteroid" then
     local asteroids = config.Entities.getByTag("asteroid")
+    if #asteroids == 0 then
+      ai.target = nil
+      ai.state = "patrolling"
+      return
+    end
     ai.target = asteroids[math.random(1,#asteroids)]
   end
   if ai.target.rigidbody.body:isDestroyed() then
@@ -174,15 +189,7 @@ local function state_harvesting(npc, ai, floatsome_hash, dt)
     local floatsome = config.SpatialHash.query(floatsome_hash,config.CELL_SIZE,nx,ny,nr+50) or {}
     if #floatsome == 0 then
       ai.target = nil
-      if npc.name == "Miner" then
-        ai.state = "mining"
-      elseif npc.name == "Hauler" then
-        ai.state = "hauling"
-      elseif npc.name == "Taxi" then
-        ai.state = "taxi"
-      else
-        ai.state = "patrolling"
-      end
+      ai.state = default_state(npc)
       return
     end
     ai.target = floatsome[math.random(1,#floatsome)]
@@ -200,7 +207,11 @@ end
 -- estados hostis
 
 local function state_chasing(npc, ai, dt, target)
-  if not target or not target == ai.target then ai.state = "idle"; return end
+  if target ~= ai.target or not body_alive(target) then
+    ai.target = nil
+    ai.state = "idle"
+    return
+  end
   local nx, ny = npc.ship.rigidbody.body:getPosition()
   local px, py = target.rigidbody.body:getPosition()
 
@@ -211,12 +222,18 @@ local function state_chasing(npc, ai, dt, target)
     ai.target = target
     ai.state = "attacking"
   elseif dist2(nx, ny, px, py) > config.HOSTILE_DETECT_RANGE*config.HOSTILE_DETECT_RANGE * 1.5 then
+    -- alvo fugiu: desiste dele, senão o idle tenta usá-lo como destino
+    ai.target = nil
     ai.state = "idle"
   end
 end
 
 local function state_attacking(npc, ai, dt, target)
-  if not target or not target == ai.target or not target.rigidbody or not target.rigidbody.body or target.rigidbody.body:isDestroyed() then ai.state = "idle"; return end
+  if target ~= ai.target or not body_alive(target) then
+    ai.target = nil
+    ai.state = "idle"
+    return
+  end
   local nx, ny = npc.ship.rigidbody.body:getPosition()
   local px, py = ai.target.rigidbody.body:getPosition()
   local ang = npc.ship.rigidbody.body:getAngle()
@@ -233,16 +250,11 @@ local function state_attacking(npc, ai, dt, target)
 
   -- saiu do range de ataque? volta a perseguir
   if dist2(nx, ny, px, py) > ATTACK_RANGE*ATTACK_RANGE * 1.2 then
-    if npc.aggressive then
+    if ai.aggressive then
       ai.state = "chasing"
-    elseif npc.name == "Miner" then
-      ai.state = "mining"
-    elseif npc.name == "Hauler" then
-      ai.state = "hauling"
-    elseif npc.name == "Taxi" then
-      ai.state = "taxi"
     else
-      ai.state = "idle"
+      ai.target = nil
+      ai.state = default_state(npc)
     end
   end
 end
@@ -278,7 +290,8 @@ NpcAI.signalHandlers = {
   shipDestroyed = function(npc, signal)
     local ai = npc.ai
     if not ai then return end
-    if npc.name == "Miner" or npc.name == "Hauler" then
+    local role = npc.profile and npc.profile.role
+    if role == "miner" or role == "hauler" then
       if ai.state == "idle" or ai.state == "patrolling" then
         ai.waypoint = { x = signal.x, y = signal.y }
         ai.state    = "harvesting"
@@ -290,15 +303,14 @@ NpcAI.signalHandlers = {
 -- update principal
 
 function NpcAI.update(playerFlagShip, floatsome_hash, dt)
+  local dead = {}
   for _, npc in ipairs(config.Entities.getByTag("npc")) do
-    if not npc.ship or not npc.ship.rigidbody
-    or not npc.ship.rigidbody.body
-    or npc.ship.rigidbody.body:isDestroyed() then
-      config.Entities.remove(npc)
-      return
-    end
     local ai = npc.ai
     repeat
+      if not body_alive(npc.ship) then
+        dead[#dead+1] = npc
+        break
+      end
       if not ai then break end
       local interrupted = config.CommunicationSystem.drainInbox(npc, ai, dt)
       if interrupted then break end
@@ -310,6 +322,7 @@ function NpcAI.update(playerFlagShip, floatsome_hash, dt)
           local nx, ny = npc.ship.rigidbody.body:getPosition()
           local px, py = playerFlagShip.rigidbody.body:getPosition()
           if dist2(nx, ny, px, py) < config.HOSTILE_DETECT_RANGE^2 then
+            ai.target = playerFlagShip
             ai.state = "chasing"
           end
         end
@@ -328,6 +341,10 @@ function NpcAI.update(playerFlagShip, floatsome_hash, dt)
       end
 
     until true
+  end
+  -- Remove depois do laço: getByTag devolve a mesma lista que Entities.remove altera
+  for _, npc in ipairs(dead) do
+    config.Entities.remove(npc)
   end
 end
 

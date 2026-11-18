@@ -4,7 +4,7 @@ local Shipyard = {}
 function Shipyard.setFlagShip(player, fleet)
   if not fleet or fleet.flagShip then return end
   -- Troca flagship: desmarca a atual, marca a selecionada
-  for _, e in ipairs(player.property.properties) do
+  for _, e in pairs(player.property.properties) do
       e.flagShip = false
   end
   fleet.flagShip = true
@@ -63,8 +63,11 @@ function Shipyard.buyShip(player, shipType, customName)
                     type=shipType,
                     cargo = {}
                   }
+  local added, err = player.property:add(newShip)
+  if not added then
+      return false, err
+  end
   player.credits.amount = player.credits.amount - def.price
-  player.property:add(newShip)
   return true, "Ship bought"
 end
 

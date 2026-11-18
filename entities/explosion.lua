@@ -6,6 +6,7 @@ return function(color,x,y,radius,duration,maxDuration,damage)
     radius   = radius or 500,
     duration = duration or 1,
     maxDuration = maxDuration or 1,
-    damage   = damage or {shieldDamage = 100, hullDamage = 100}
+    damage   = damage or {shieldDamage = 100, hullDamage = 100},
+    hit      = {},  -- alvos que já levaram dano desta explosão
   })
 end

@@ -646,6 +646,26 @@ function input.beginFrame()
     sync_legacy_state()
 end
 
+-- Esconde os pulses visíveis neste frame e devolve quais eram, para
+-- restorePulses. A simulação em passo fixo usa o par para que um pulse valha
+-- só no primeiro passo de um frame que roda vários passos.
+function input.hidePulses()
+    local hidden = {}
+    for action in pairs(last_pulses) do
+        if input.state[action] then
+            hidden[action] = true
+            input.state[action] = false
+        end
+    end
+    return hidden
+end
+
+function input.restorePulses(hidden)
+    for action in pairs(hidden) do
+        input.state[action] = true
+    end
+end
+
 -- Consome um pulse explicitamente (evita que dois sistemas o leiam)
 function input.consume(action)
     if active_pulses[action] then

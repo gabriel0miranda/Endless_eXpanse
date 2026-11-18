@@ -20,7 +20,7 @@ name = "Minério de Ouro",
 rarity = "rare",
 category = "good",
 volume = 10,
-color = {255,215,0},
+color = {1, 215/255, 0},
 basePrice = 90,
 },
 ["Titanium Ore"] = {

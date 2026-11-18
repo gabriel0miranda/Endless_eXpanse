@@ -8,6 +8,7 @@ local mouseFadeTimer = 5
 
 function Playing.onEnter(params)
   config.Input.pushContext("playing")
+  config.Simulation.reset()
   config.InventoryUI.load()
   if params and params.resuming then
     landCooldown = 1.5
@@ -42,6 +43,37 @@ function Playing.onExit()
   print("Exiting playing state")
 end
 
+-- Janelas modais em ordem de prioridade: a primeira aberta recebe a entrada.
+-- Os módulos são resolvidos pelo nome em tempo de chamada porque config ainda
+-- não existe quando este arquivo é carregado.
+-- update = false: a janela não é atualizada pelo estado playing.
+local MODALS = {
+  { ui = "MapUI",           update = false },
+  { ui = "TextInputUI",     update = false },
+  { ui = "SelectUI",        update = true },
+  { ui = "DialogueUI",      update = true },
+  { ui = "PropertyUI",      update = true },
+  { ui = "InventoryUI",     update = true },
+  { ui = "CommunicationUI", update = true, openCheck = "CommunicationSystem" },
+  { ui = "MarketUI",        update = true },
+}
+
+local function modalIsOpen(modal)
+  return config[modal.openCheck or modal.ui].isOpen()
+end
+
+-- Repassa o evento para a janela modal do topo; devolve true se alguma o consumiu
+local function dispatchToModal(method, ...)
+  for _, modal in ipairs(MODALS) do
+    if modalIsOpen(modal) then
+      local ui = config[modal.ui]
+      if ui[method] then ui[method](...) end
+      return true
+    end
+  end
+  return false
+end
+
 local function obj_pos(obj)
   return obj.x, obj.y
 end
@@ -56,6 +88,42 @@ end
 
 local function shape_radius(entity)
   return (entity.sprite.shape and entity.sprite.shape:getRadius()) or 20
+end
+
+local function playerAlive()
+  return playerFlagShip and playerFlagShip.rigidbody and playerFlagShip.rigidbody.body
+    and not playerFlagShip.rigidbody.body:isDestroyed()
+end
+
+-- Um passo fixo do mundo (ver managers/simulation.lua). Tudo que aplica força,
+-- move ou causa dano roda aqui; câmera, pouso e janelas rodam uma vez por frame.
+local function simulationStep(dt)
+  local ast_hash = config.SpatialHash.build(config.Entities.getByTag("asteroid"),rigidbody_pos,shape_radius,config.CELL_SIZE)
+
+  local floatsome_hash = config.SpatialHash.build(config.Entities.getByTag("floatsome"),obj_pos,obj_radius,config.CELL_SIZE)
+
+  local ship_hash = config.SpatialHash.build(config.Entities.getByTag("ship"),rigidbody_pos,shape_radius,config.CELL_SIZE)
+
+  config.ShipMovementSystem.update(playerFlagShip, dt)
+  config.NpcAISystem.update(playerFlagShip, floatsome_hash, dt)
+  config.GravityPullSystem.update(dt)
+  config.LandableMovementSystem.update(dt)
+  config.EnergySystem.update(generatorEntities,dt)
+  config.WeaponSystem.update(armedEntities, dt)
+  config.PickupSystem.update(dt,floatsome_hash)
+  config.ProjectileSystem.update(ship_hash,ast_hash,dt)
+  config.LaserSystem.update(dt)
+  config.BeamSystem.update(dt)
+  config.PulseSystem.update(ship_hash,ast_hash,dt)
+  config.MineSystem.update(ship_hash,ast_hash,dt)
+  config.ExplosionSystem.update(ship_hash, ast_hash, dt)
+  config.DamageSystem.update(dt)
+  config.FloatsomeSystem.update(dt)
+
+  -- Nave destruída neste passo: para a simulação e deixa o update trocar de estado
+  if not playerAlive() then return false end
+
+  config.World:update(dt)
 end
 
 function Playing.update(dt)
@@ -77,30 +145,10 @@ function Playing.update(dt)
     config.MapUI.toggle(playerFlagShip)
   end
 
-  local ast_hash = config.SpatialHash.build(config.Entities.getByTag("asteroid"),rigidbody_pos,shape_radius,config.CELL_SIZE)
-
-  local floatsome_hash = config.SpatialHash.build(config.Entities.getByTag("floatsome"),obj_pos,obj_radius,config.CELL_SIZE)
-
-  local ship_hash = config.SpatialHash.build(config.Entities.getByTag("ship"),rigidbody_pos,shape_radius,config.CELL_SIZE)
-
   config.TargetingSystem.update(playerFlagShip,dt)
-  config.ShipMovementSystem.update(playerFlagShip, dt)
-  config.NpcAISystem.update(playerFlagShip, floatsome_hash, dt)
-  config.GravityPullSystem.update(dt)
-  config.LandableMovementSystem.update(dt)
-  config.EnergySystem.update(generatorEntities,dt)
-  config.WeaponSystem.update(armedEntities, dt)
-  config.PickupSystem.update(dt,floatsome_hash)
-  config.ProjectileSystem.update(ship_hash,ast_hash,dt)
-  config.LaserSystem.update(dt)
-  config.BeamSystem.update(dt)
-  config.PulseSystem.update(ship_hash,ast_hash,dt)
-  config.MineSystem.update(ship_hash,ast_hash,dt)
-  config.ExplosionSystem.update(ship_hash, ast_hash, dt)
-  config.DamageSystem.update(dt)
-  config.FloatsomeSystem.update(dt)
+  config.Simulation.advance(dt, simulationStep)
 
-  if not playerFlagShip or not playerFlagShip.rigidbody or not playerFlagShip.rigidbody.body or playerFlagShip.rigidbody.body:isDestroyed() then
+  if not playerAlive() then
     config.GameState.switch("dead")
     return
   end
@@ -134,31 +182,16 @@ function Playing.update(dt)
     config.PropertyUI.toggle()
   end
 
-  if config.InventoryUI.isOpen() then
-    config.InventoryUI.update(dt)
-  end
-  if config.MarketUI.isOpen() then
-    config.MarketUI.update(dt)
-  end
-  if config.SelectUI.isOpen() then
-    config.SelectUI.update(dt)
-  end
-  if config.DialogueUI.isOpen() then
-    config.DialogueUI.update(dt)
-  end
-  if config.PropertyUI.isOpen() then
-    config.PropertyUI.update(dt)
-  end
-  if config.CommunicationSystem.isOpen() then
-    config.CommunicationUI.update()
+  for _, modal in ipairs(MODALS) do
+    if modal.update and modalIsOpen(modal) then
+      config[modal.ui].update(dt)
+    end
   end
 
   if config.Input.state.ui_comm and config.TargetingSystem.current then
     config.CommunicationUI.openComm(playerFlagShip)
   end
   config.CommunicationSystem.update(playerFlagShip,dt)
-
-  config.World:update(dt)
 end
 
 function Playing.textinput(t)
@@ -168,40 +201,7 @@ function Playing.textinput(t)
 end
 
 function Playing.keypressed(key)
-  if config.MapUI.isOpen() then
-    config.MapUI.keypressed(key)
-    return
-  end
-  if config.TextInputUI.isOpen() then
-    config.TextInputUI.keypressed(key)
-    return
-  end
-  if config.SelectUI.isOpen() then
-    config.SelectUI.keypressed(key)
-    return
-  end
-  if config.DialogueUI.isOpen() then
-    config.DialogueUI.keypressed(key);
-    return
-  end
-  if config.PropertyUI.isOpen() then
-    config.PropertyUI.keypressed(key)
-    return
-  end
-
-  if config.InventoryUI.isOpen() then
-    config.InventoryUI.keypressed(key)
-    return
-  end
-
-  if config.CommunicationSystem.isOpen() then
-    config.CommunicationUI.keypressed(key)
-    return
-  end
-  if config.MarketUI.isOpen() then
-    config.MarketUI.keypressed(key)
-    return
-  end
+  if dispatchToModal("keypressed", key) then return end
   config.TargetingSystem.keypressed(key)
 end
 
@@ -212,76 +212,12 @@ function Playing.mousemoved(x,y,dx,dy,istouch)
 end
 
 function Playing.mousepressed(mx, my, button)
-  if config.MapUI.isOpen() then
-    config.MapUI.mousepressed(mx, my, button)
-    return
-  end
-  if config.TextInputUI.isOpen() then
-    config.TextInputUI.mousepressed(mx, my, button)
-    return
-  end
-  if config.SelectUI.isOpen() then
-    config.SelectUI.mousepressed(mx, my, button)
-    return
-  end
-  if config.DialogueUI.isOpen() then
-    config.DialogueUI.mousepressed(mx, my, button);
-    return
-  end
-  if config.PropertyUI.isOpen() then
-    config.PropertyUI.mousepressed(mx, my, button)
-    return
-  end
-
-  if config.InventoryUI.isOpen() then
-    config.InventoryUI.mousepressed(mx, my, button)
-    return
-  end
-
-  if config.CommunicationSystem.isOpen() then
-    config.CommunicationUI.mousepressed(mx, my, button)
-    return
-  end
-
-  if config.MarketUI.isOpen() then
-    config.MarketUI.mousepressed(mx, my, button)
-    return
-  end
+  if dispatchToModal("mousepressed", mx, my, button) then return end
   config.TargetingSystem.mousepressed(mx, my, button)
 end
 
 function Playing.wheelmoved(dx, dy)
-  if config.MapUI.isOpen() then
-    config.MapUI.wheelmoved(dx, dy)
-    return
-  end
-  if config.SelectUI.isOpen() then
-    config.SelectUI.wheelmoved(dx, dy)
-    return
-  end
-  if config.DialogueUI.isOpen() then
-    config.DialogueUI.wheelmoved(dx, dy);
-    return
-  end
-  if config.PropertyUI.isOpen() then
-    config.PropertyUI.wheelmoved(dx, dy)
-    return
-  end
-
-  if config.InventoryUI.isOpen() then
-    config.InventoryUI.wheelmoved(dx, dy)
-    return
-  end
-
-  if config.CommunicationSystem.isOpen() then
-    config.CommunicationUI.wheelmoved(dx, dy)
-    return
-  end
-
-  if config.MarketUI.isOpen() then
-    config.MarketUI.wheelmoved(dx, dy)
-    return
-  end
+  dispatchToModal("wheelmoved", dx, dy)
 end
 
 function Playing.draw()

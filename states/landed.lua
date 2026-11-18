@@ -573,7 +573,7 @@ function Landed.keypressed(key)
       return
   end
   if config.DialogueUI.isOpen() then
-    config.DialogueUI.keypressed(k);
+    config.DialogueUI.keypressed(key);
     return
   end
   if config.MarketUI.isOpen() then
@@ -630,7 +630,7 @@ function Landed.mousepressed(mx, my, button)
         return
     end
     if config.DialogueUI.isOpen() then
-      config.DialogueUI.mousepressed(mx, my, btn);
+      config.DialogueUI.mousepressed(mx, my, button);
       return
     end
     if config.MarketUI.isOpen() then

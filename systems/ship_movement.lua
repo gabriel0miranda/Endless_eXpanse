@@ -153,8 +153,9 @@ function ShipMovement.update(playerFlagShip, dt)
 
   for _, npc in ipairs(config.Entities.getByTag("npc")) do
     if not npc.ship.intent then npc.ship.intent = ShipMovement.newIntent() end
-    if npc.ship.disabled then return end
-    applyIntent(npc.ship, dt)
+    if not npc.ship.disabled then
+      applyIntent(npc.ship, dt)
+    end
   end
 end
 

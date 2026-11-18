@@ -105,7 +105,7 @@ return {
     starColor    = {1,0.2,0.1},
     population = {
       weights = {
-        ["Pirate"] = 2.2
+        ["Pirate"] = 1.5
       },
       categoryWeights = {
         faction = { ["Ballestra"] = 1.5 },

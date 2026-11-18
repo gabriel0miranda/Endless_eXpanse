@@ -1,16 +1,18 @@
 return function(start, playerName)
   playerName = playerName ~= "" and playerName or start.name
+  -- Indexadas pelo nome, como em PropertyComponent.add; copiadas para não alterar data/starts.lua
   local property_owned = {}
   for _, property in ipairs(start.starting_property) do
-    table.insert(property_owned,property)
+    property_owned[property.name] = config.DeepCopy(property)
   end
 
   return config.Entities.create("player", {
     name      = playerName,
     property  = config.PropertyComponent(property_owned),
     credits          = config.CreditsComponent(start.starting_credits),
-    x         = start.x or config.Landables[start.starting_place].x,
-    y         = start.y or config.Landables[start.starting_place].y,
+    -- Sem x/y no cenário, WorldManager.loadSystem posiciona no starting_place
+    x         = start.x,
+    y         = start.y,
     landedAt  = start.landedAt,
     startingScenario = start
   })

@@ -29,8 +29,6 @@ return function (populationConfig)
   local categoryWeights = populationConfig.categoryWeights or {}
   local variance = populationConfig.variance or DEFAULT_VARIANCE
 
-  local rng = love.math.newRandomGenerator(os.time()) -- seed única, fora do loop
-
   local totalNPCNumber = 0
 
   for npcType, profile in pairs(config.NpcProfiles) do
@@ -49,12 +47,12 @@ return function (populationConfig)
       local npc_population = math.floor(finalDensity * 36000)
 
       if npc_population > 0 then
-        local npcCount = math.ceil(rng:random(npc_population * (1 - (variance/100)), npc_population))
+        local npcCount = math.ceil(love.math.random(npc_population * (1 - (variance/100)), npc_population))
         totalNPCNumber = totalNPCNumber + npcCount
 
         local currentNPCNumber = #config.Entities.getByTag("npc")
         for i = currentNPCNumber+1, currentNPCNumber + npcCount, 1 do
-          local x, y = rng:random(-6000, 6000), rng:random(-6000, 6000)
+          local x, y = love.math.random(-6000, 6000), love.math.random(-6000, 6000)
           local shipType = profile.ship
           local def = config.Ships[shipType]
           local id = i
@@ -63,9 +61,9 @@ return function (populationConfig)
             local volume = 0
             local currentCargo = {}
             for item, data in pairs(config.Items) do
-              local moeda = rng:random(0, 1)
+              local moeda = love.math.random(0, 1)
               if moeda == 1 then
-                local quantidade = rng:random(1, def.cargo / data.volume)
+                local quantidade = love.math.random(1, def.cargo / data.volume)
                 volume = volume + quantidade * data.volume
                 if volume < def.cargo then
                   currentCargo[item] = quantidade
@@ -79,13 +77,7 @@ return function (populationConfig)
             profile = profile,
             name = npcType,
             id = id,
-            ai = config.AIComponent({
-              state = "idle",
-              target = nil,
-              timer = 0,
-              faction = profile.faction,
-              aggressive = profile.aggressive
-            }),
+            ai = config.AIComponent(profile.faction, profile.aggressive),
             ship = config.ShipEntity(x, y, id, false, shipType, shipType, nil, def.weapons, cargo())
           })
         end
