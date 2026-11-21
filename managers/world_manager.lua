@@ -1,6 +1,5 @@
 local WorldManager = {}
 
-WorldManager.currentSystemId = 1
 WorldManager.systems = {}
 WorldManager.snapshot = nil
 
@@ -51,8 +50,34 @@ function WorldManager.unfreeze()
   WorldManager.snapshot = nil
 end
 
+-- Começa um jogo do zero: apaga as entidades de um jogo anterior (o menu pode
+-- ser aberto em pleno voo) e cria um WorldState novo. Chamar antes de criar o
+-- jogador.
+function WorldManager.newGame(startingSystemId)
+  config.Entities.clear()
+  config.WorldState.new(startingSystemId)
+end
+
+-- Copia para o WorldState o que mudou nos landables do sistema atual (hoje,
+-- o mercado). Chamar antes de descarregar o sistema e antes de salvar.
+function WorldManager.storeSystem()
+  local systemId = config.WorldState.currentSystemId()
+  if not systemId then return end
+  for _, l in ipairs(config.Entities.getByTag("landable")) do
+    local record = not l.wormhole and config.WorldState.landable(systemId, l.name)
+    if record and l.market and l.market.generated and l.inventory then
+      record.market = {
+        capacity = l.inventory.capacity,
+        items    = l.inventory.items,
+        prices   = l.market.prices,
+      }
+    end
+  end
+end
+
 function WorldManager.loadSystem(systemId)
   local player = config.Entities.getByTag("player")[1]
+  WorldManager.storeSystem()
   local toRemove = {}
   local currentCargo = {}
   for _, e in ipairs(config.Entities.all) do
@@ -72,20 +97,19 @@ function WorldManager.loadSystem(systemId)
     config.Entities.remove(e)
   end
 
-  WorldManager.currentSystemId = systemId
-
   local sys = WorldManager.systems[systemId]
   if not sys then
     print("WARNING: System "..systemId.." not defined!")
     return
   end
+  config.WorldState.setCurrentSystem(systemId)
 
   config.StarEntity(sys.starX,sys.starY,sys.starMass,sys.starRadius,sys.starColor)
 
   local starList = config.Entities.getByTag("star")
   local star = starList[1]
 
-  config.LandableEntity(star,sys.landables)
+  config.LandableEntity(star,sys.landables,systemId)
 
   config.AsteroidEntity(star,sys.asteroidCount,sys.asteroidOres)
 
