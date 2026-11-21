@@ -96,8 +96,11 @@ function WorldManager.loadSystem(systemId)
   for _, property in pairs(player.property.properties) do
     if property.ship and property.flagShip then
       if player.x == nil or player.y == nil then
-        player.x = config.Landables[player.startingScenario.starting_place].x
-        player.y = config.Landables[player.startingScenario.starting_place].y
+        for _, l in ipairs(config.Entities.getByTag("landable")) do
+          if l.name == player.startingScenario.starting_place then
+            player.x, player.y = l.x, l.y
+          end
+        end
       end
       config.ShipEntity(player.x, player.y, player.name, true, property.name, property.type, player.landedAt, property.weapons, property.cargo)
     end

@@ -1,5 +1,8 @@
 local Market = {}
 
+-- Margem entre o que a estação paga e o que ela cobra (0.1 = ±10% do preço médio)
+local SPREAD = 0.1
+
 -- Preço base global por item (fallback)
 local function getBasePrices()
   local basePrices = {}
@@ -13,9 +16,9 @@ function Market.generateStock(trader)
   local market = {}
   if not trader.market then
     trader.market = {}
-    trader.market.capacity = trader.inventory.capacity or 100
+    trader.market.capacity = trader.inventory and trader.inventory.capacity or 100
     trader.market.stock = {}
-    for item, qty in pairs(trader.inventory.items) do
+    for item, qty in pairs(trader.inventory and trader.inventory.items or {}) do
       table.insert(trader.market.stock,{item=item,min=qty,max=qty})
     end
   end
@@ -33,12 +36,15 @@ function Market.generateStock(trader)
   end
 
   -- Gera tabela de preços de compra e venda
-  -- A estação compra mais caro os itens que ela valoriza (demanded)
+  -- A demanda (demanded) desloca o preço médio do item na estação; compra e venda
+  -- ficam sempre em lados opostos desse preço médio, então comprar e revender no
+  -- mesmo lugar dá prejuízo. O lucro só vem de levar o item até onde vale mais.
   local prices = {}
   for item, basePrice in pairs(getBasePrices()) do
     local demand    = market.demanded and market.demanded[item] or 1.0
-    local buyPrice  = math.floor(basePrice * demand * (0.9 + love.math.random() * 0.2))
-    local sellPrice = math.floor(basePrice * 0.8 * (0.9 + love.math.random() * 0.2))
+    local midPrice  = basePrice * demand * (0.9 + love.math.random() * 0.2)
+    local buyPrice  = math.floor(midPrice * (1 - SPREAD))
+    local sellPrice = math.ceil(midPrice * (1 + SPREAD))
     prices[item] = {
       buy  = buyPrice,   -- preço que a estação paga ao jogador
       sell = sellPrice,  -- preço que a estação cobra do jogador

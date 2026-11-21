@@ -171,7 +171,11 @@ end
 
 -- Aplica o intent — executa o disparo se as condições batem
 local function applyIntent(e, dt)
-  if e.disabled then return end
+  if e.disabled then
+    -- Nave desativada: solta o gatilho de todas as armas (senão o beam continua ligado)
+    for _, w in pairs(e.weapons) do w.firing = false end
+    return
+  end
   local weapon = e.weapons[e.currentWeapon]
   local intent = e.weapons_intent
 

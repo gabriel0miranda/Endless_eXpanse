@@ -315,7 +315,7 @@ local function drawHUD(playerFlagShip,camera)
 end
 
 local function drawDebugOverlay(playerFlagShip)
-  if not config.Input.state.debugFlag then return end
+  if not config.Input.state.debugFlag or not playerFlagShip then return end
   love.graphics.setColor(0, 1, 0)
   love.graphics.setFont(config.smallFont)
   love.graphics.print(

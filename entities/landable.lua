@@ -15,15 +15,15 @@ end
 
 return function(star,landables)
   for _, landable in ipairs(landables or {}) do
+    -- config.Landables é só leitura: a posição sorteada fica apenas na entidade
     local landable_data = config.Landables[landable]
     local x,y = randomPointOnOrbit(star.x, star.y, landable_data.orbitRadius, landable_data.orbitAngle)
-    if x ~= nil and y ~= nil then
-      landable_data.x = x
-      landable_data.y = y
+    if x == nil or y == nil then
+      x, y = landable_data.x, landable_data.y
     end
-    local orbitRadius = landable.orbitRadius or math.sqrt((landable_data.x - star.x)^2 + (landable_data.y - star.y)^2)
-    local orbitAngle = landable.orbitAngle or math.atan2(landable_data.y - star.y, landable_data.x - star.x)
-    local sprite = config.SpriteComponent(landable_data.color,love.physics.newCircleShape(landable_data.x,landable_data.y,landable_data.radius),"Circle")
+    local orbitRadius = landable_data.orbitRadius or math.sqrt((x - star.x)^2 + (y - star.y)^2)
+    local orbitAngle = math.atan2(y - star.y, x - star.x)
+    local sprite = config.SpriteComponent(landable_data.color,love.physics.newCircleShape(x,y,landable_data.radius),"Circle")
     local market = {
         generated = false,
         prices = {},
@@ -40,8 +40,8 @@ return function(star,landables)
     local orbitSpeed = landable_data.orbitSpeed or 0.0005
     config.Entities.create("landable",{
       name=landable,
-      x=landable_data.x,
-      y=landable_data.y,
+      x=x,
+      y=y,
       radius=landable_data.radius,
       sprite=sprite,
       market=market,
