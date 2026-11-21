@@ -4,6 +4,8 @@ return {
   description = "Você cresceu em Coração de Mãe, mas acabou preso com sua mãe e seu padrasto na gigantesca colônia de férias que é o Refúgio de Merle. O Império Noobi encolheu, e a liberdade lhe pareceu mais próxima em um belo dia de primavera.\nCom a PP-2340 que sua mãe recebeu de herança (mas nunca pilotou) você parte em direção ao desconhecido. Escape do espaço Noobinobi, venda qualquer mercadoria que puder encontrar e assuma as rédeas do seu destino.",
   starting_system = "Eagle's Nest",
   starting_systemId = 1,
+  -- Data provisória: a lore só fixa a invasão de Flutura em 755 E.G.
+  starting_date = { year = 768, month = 1, day = 1, hour = 8 },
   starting_place = "Merle's Refuge",
 -- Se não tiver starting place
 -- x = 400,
@@ -30,6 +32,8 @@ return {
   description = "Após 16 longos anos trabalhando na Bola de Ferro, você finalmente juntou dinheiro suficiente para mudar de profissão e deixar a Ballestra Inc.\nSua vida agora é incerta e solitária, mas a galáxia inteira está ao seu alcance.",
   starting_system = "Flag's Peak",
   starting_systemId = 4,
+  -- Data provisória: a lore só fixa a invasão de Flutura em 755 E.G.
+  starting_date = { year = 768, month = 1, day = 1, hour = 8 },
   starting_place = "Iron Ball",
 -- Se não tiver starting place
 -- x = 400,
