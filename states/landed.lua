@@ -442,6 +442,9 @@ function Landed.onEnter()
         config.MarketSystem.generateStock(playerFlagShip.landedAt)
     end
 
+    -- Autosave a cada pouso (o mercado já existe, então entra no save)
+    config.SaveManager.save()
+
     -- Constrói botões a partir dos dados do landable
     local allBtns = {}
     allButtonsFlat = {}
@@ -474,6 +477,11 @@ function Landed.onEnter()
 end
 
 function Landed.onExit()
+    -- Salva o que mudou em terra (compras, naves) antes de decolar.
+    -- Na travessia de wormhole a nave não está pousada e o save é ignorado.
+    if config.SaveManager.canSave() then
+        config.SaveManager.save()
+    end
     activePanel = "none"
     config.Input.popContext("landed")
     if playerFlagShip and playerFlagShip.rigidbody and playerFlagShip.rigidbody.body then

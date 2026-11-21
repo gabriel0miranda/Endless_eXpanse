@@ -102,6 +102,23 @@ function Market.executeTrade(trader, ship, offering, requesting)
         end
     end
 
+    -- Verifica espaço dos dois lados: InventoryComponent:add corta a quantidade
+    -- quando falta espaço, e o item pago sumiria no meio da troca
+    local function volume(list)
+        local total = 0
+        for _, entry in ipairs(list) do
+            total = total + (config.Items[entry.item].volume or 1) * entry.qty
+        end
+        return total
+    end
+    local offered, requested = volume(offering), volume(requesting)
+    if ship.inventory.capacityUsed - offered + requested > ship.inventory.capacity then
+        return false, "Sem espaço no porão"
+    end
+    if trader.inventory.capacityUsed - requested + offered > trader.inventory.capacity then
+        return false, "A estação não tem espaço"
+    end
+
     -- Executa
     for _, o in ipairs(offering) do
         ship.inventory:remove(o.item, o.qty)
