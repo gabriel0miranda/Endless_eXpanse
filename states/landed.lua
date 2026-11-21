@@ -26,6 +26,7 @@ local buttonLabels = {
     outfitter = "Outfitter",
     contracts = "Contracts",
     spaceport = "Spaceport",
+    rest      = "Descansar",
     depart    = "Depart",
 }
 
@@ -37,6 +38,7 @@ local buttonScenes = {
     outfitter = "station",
     contracts = "contracts",
     spaceport = "station",
+    rest      = "station",
     depart    = "space",
 }
 
@@ -459,6 +461,9 @@ function Landed.onEnter()
         if i % 2 == 1 then table.insert(leftButtons, btn)
         else               table.insert(rightButtons, btn) end
     end
+    local restBtn = { key = "rest", label = buttonLabels.rest }
+    table.insert(rightButtons, restBtn)
+    table.insert(allButtonsFlat, restBtn)
     local departBtn = { key = "depart", label = "Depart", danger = true }
     table.insert(rightButtons, departBtn)
     table.insert(allButtonsFlat, departBtn)
@@ -484,7 +489,9 @@ function Landed.onExit()
     end
     activePanel = "none"
     config.Input.popContext("landed")
-    if playerFlagShip and playerFlagShip.rigidbody and playerFlagShip.rigidbody.body then
+    -- Depois de um descanso a nave antiga já foi destruída (o sistema foi remontado)
+    if playerFlagShip and playerFlagShip.rigidbody and playerFlagShip.rigidbody.body
+        and not playerFlagShip.rigidbody.body:isDestroyed() then
         local angle = playerFlagShip.rigidbody.body:getAngle()
         playerFlagShip.rigidbody.body:applyLinearImpulse(
             math.cos(angle) * 400,
@@ -507,6 +514,39 @@ function Landed.onExit()
     print("Launched into space")
 end
 
+-- Dorme até a manhã seguinte (ver WorldManager.rest). O sistema é montado de
+-- novo, então o estado landed é reiniciado pelo mesmo caminho do "Continuar".
+local function doRest()
+    if config.MarketUI.isOpen() then config.MarketUI.close() end
+    if config.InventoryUI.isOpen() then config.InventoryUI.closeAll() end
+    if config.ShipyardUI.isOpen() then config.ShipyardUI.close() end
+
+    local slept = config.WorldManager.rest()
+    config.GameState.switch("playing")
+    config.DialogueUI.open({
+        speaker = "Descanso",
+        text = string.format("Você dormiu %d horas. Agora são %s.",
+            math.floor(slept / 3600 + 0.5), config.Calendar.format(config.Calendar.now())),
+    })
+end
+
+local function handleRest()
+    local now = config.Calendar.now()
+    local wake = now + config.Calendar.restDuration(now)
+    config.DialogueUI.open({
+        speaker = "Descansar",
+        text = string.format("Dormir até %s?\n\nO sistema muda enquanto você dorme: asteroides e naves novas, mercados reabastecidos.",
+            config.Calendar.format(wake)),
+        options = {
+            { label = "Dormir",   value = true },
+            { label = "Cancelar", value = false },
+        },
+        onConfirm = function(option)
+            if option and option.value then doRest() end
+        end,
+    })
+end
+
 local function activateButton(key)
     showLocationDesc = false  -- qualquer botão descarta a descrição inicial
     if key == "trade" and playerFlagShip.landedAt and config.Landables[playerFlagShip.landedAt.name].market then
@@ -515,6 +555,8 @@ local function activateButton(key)
     elseif key == "shipyard" and playerFlagShip.landedAt and config.Landables[playerFlagShip.landedAt.name].shipyard then
       activePanel = "shipyard"
       config.ShipyardUI.toggle(playerFlagShip, playerFlagShip.landedAt)
+    elseif key == "rest" then
+      handleRest()
     elseif key == "depart" then
       handleDepart()
     else
@@ -726,6 +768,14 @@ function Landed.draw()
     love.graphics.print(
         landedData.name or "Unknown",
         G.sceneX + 10,
+        G.sceneY + G.sceneH - 20
+    )
+
+    -- Data e hora (o tempo não passa pousado; só o descanso o avança)
+    local dateText = config.Calendar.format(config.Calendar.now())
+    love.graphics.print(
+        dateText,
+        G.sceneX + G.sceneW - 10 - config.smallFont:getWidth(dateText),
         G.sceneY + G.sceneH - 20
     )
 

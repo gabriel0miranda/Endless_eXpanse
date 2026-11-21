@@ -5,11 +5,12 @@
 -- montado de novo a partir do WorldState e a nave volta pousada no mesmo lugar.
 --
 -- O que o save guarda:
---   * o WorldState inteiro (relógio, sistema atual, mercados, órbitas);
+--   * o WorldState inteiro (relógio, data, sistema atual, mercados, órbitas,
+--     asteroides);
 --   * o jogador: nome, créditos, cenário inicial, onde está pousado e as
 --     propriedades (naves, com armas e carga).
--- O que não guarda: hull, escudos e capacitores (voltam cheios), asteroides
--- e NPCs (gerados de novo).
+-- O que não guarda: hull, escudos e capacitores (voltam cheios) e NPCs
+-- (gerados de novo). Os asteroides vão junto, dentro do WorldState.
 local SaveManager = {}
 
 SaveManager.VERSION = 1
@@ -103,7 +104,7 @@ function SaveManager.restore(data)
   config.WorldState.load(data.world)
 
   -- Jogador montado direto dos dados salvos (PlayerEntity parte do cenário inicial)
-  local p = config.Entities.create("player", {
+  config.Entities.create("player", {
     name             = data.player.name,
     property         = config.PropertyComponent(data.player.properties),
     credits          = config.CreditsComponent(data.player.credits),
@@ -114,15 +115,7 @@ function SaveManager.restore(data)
   config.WorldManager.loadSystem(config.WorldState.currentSystemId())
 
   -- Devolve a nave ao landable onde ela estava pousada
-  local ship = flagShip()
-  for _, l in ipairs(config.Entities.getByTag("landable")) do
-    if l.name == data.player.landedAt and not l.toSystem then
-      p.x, p.y = l.x, l.y
-      ship.rigidbody.body:setPosition(l.x, l.y)
-      ship.landedAt = l
-    end
-  end
-  if not ship.landedAt then
+  if not config.WorldManager.placeLanded(data.player.landedAt) then
     return false, "Local de pouso não encontrado: " .. tostring(data.player.landedAt)
   end
   return true
