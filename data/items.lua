@@ -135,6 +135,15 @@ volume = 1,
 color = {0.1,0.6,0.4,1},
 basePrice = 15
 },
+-- Valores provisórios
+["Energy Cell"] = {
+name = "Célula de Energia",
+rarity = "uncommon",
+category = "good",
+volume = 2,
+color = {0.2,0.9,1,1},
+basePrice = 40
+},
 ["Clothing"] = {
 name = "Roupas",
 rarity = "common",

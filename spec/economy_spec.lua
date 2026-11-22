@@ -60,6 +60,18 @@ describe("Economy", function()
     assert.is_true(scarce.sell > scarce.buy and abundant.sell > abundant.buy)
   end)
 
+  it("separa os itens consumidos dos produzidos", function()
+    local consumed, produced = Economy.uses({ industries = { ["Mill"] = 1 } })
+    assert.are.same({ ["Iron Ore"] = true }, consumed)
+    assert.are.same({ ["Steel Sheets"] = true }, produced)
+  end)
+
+  it("recusa receita com item inexistente", function()
+    config.Industries["Bad"] = { inputs = { ["Unobtainium"] = 1 } }
+    assert.has_error(function() Economy.targets({ industries = { ["Bad"] = 1 } }) end,
+      "Item não definido em data/items.lua: Unobtainium (indústria Bad)")
+  end)
+
   it("guarda a fração de hora que ainda não foi simulada", function()
     local hours, updatedAt = Economy.elapsedHours(0, 3 * 3600 + 1200)
     assert.are.equal(3, hours)
@@ -102,5 +114,29 @@ describe("MarketSystem.openLandable", function()
     config.MarketSystem.openLandable(s)
     assert.is_true(s.inventory.items["Water"] >= 100)  -- 10 h de poço
     assert.is_true(s.market.prices["Water"].sell < emptyPrice)
+  end)
+end)
+
+describe("Dados da economia", function()
+  before_each(function() Helper.setup() end)
+
+  it("só usam indústrias e itens que existem", function()
+    for name, landable in pairs(require("data.landables")) do
+      local market = landable.market
+      if market then
+        local ok, err = pcall(config.Economy.targets, market)
+        assert.is_true(ok, name .. ": " .. tostring(err))
+        for _, entry in ipairs(market.stock or {}) do
+          assert.is_not_nil(config.Items[entry.item], name .. ": item de stock inexistente " .. entry.item)
+        end
+      end
+    end
+  end)
+
+  it("só usam itens que existem em todas as receitas", function()
+    for key in pairs(config.Industries) do
+      local ok, err = pcall(config.Economy.uses, { industries = { [key] = 1 } })
+      assert.is_true(ok, tostring(err))
+    end
   end)
 end)

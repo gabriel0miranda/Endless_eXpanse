@@ -26,7 +26,8 @@ local function buildMarket(landable_data, record)
     data = landable_data.market,
     capacity = landable_data.market and landable_data.market.capacity or 0,
     stock = landable_data.market and landable_data.market.stock or {},
-    demanded = landable_data.market and landable_data.market.demanded or {}
+    -- Itens que as indústrias do local consomem: destacados no MarketUI
+    demanded = landable_data.market and (config.Economy.uses(landable_data.market)) or {}
   }
   local inventory = nil
   if record.market and landable_data.market then

@@ -72,13 +72,11 @@ function Market.generateStock(trader)
   end
 
   -- Gera tabela de preços de compra e venda
-  -- A demanda (demanded) desloca o preço médio do item na estação; compra e venda
-  -- ficam sempre em lados opostos desse preço médio, então comprar e revender no
-  -- mesmo lugar dá prejuízo. O lucro só vem de levar o item até onde vale mais.
+  -- Compra e venda ficam sempre em lados opostos do preço médio, então comprar
+  -- e revender no mesmo lugar dá prejuízo.
   local prices = {}
   for item, basePrice in pairs(getBasePrices()) do
-    local demand    = market.demanded and market.demanded[item] or 1.0
-    local midPrice  = basePrice * demand * (0.9 + love.math.random() * 0.2)
+    local midPrice  = basePrice * (0.9 + love.math.random() * 0.2)
     local buyPrice  = math.floor(midPrice * (1 - SPREAD))
     local sellPrice = math.ceil(midPrice * (1 + SPREAD))
     prices[item] = {

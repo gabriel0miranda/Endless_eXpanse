@@ -8,15 +8,15 @@ describe("Market", function()
     Market = config.MarketSystem
   end)
 
-  local function newStation(demanded)
+  local function newStation()
     return {
-      market = { capacity = 20000, demanded = demanded or {}, stock = {} },
+      market = { capacity = 20000, stock = {} },
     }
   end
 
   it("cobra sempre mais do que paga pelo mesmo item", function()
     for _ = 1, 50 do
-      local station = newStation({ ["Silver Ore"] = 2.0, ["Cocaine"] = 3.0 })
+      local station = newStation()
       Market.generateStock(station)
       for item, price in pairs(station.market.prices) do
         assert.is_true(price.sell > price.buy, item .. ": sell " .. price.sell .. " <= buy " .. price.buy)

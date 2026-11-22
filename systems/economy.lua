@@ -5,8 +5,9 @@
 --   2. O comércio de fundo, que representa os cargueiros que o jogo ainda não
 --      simula, puxa cada estoque em direção ao seu alvo: importa o que falta e
 --      exporta o que sobra.
--- O preço sai da razão entre estoque e alvo, multiplicada pela demanda fixa
--- do local (`demanded`) e por uma flutuação lenta e aleatória.
+-- O preço sai da razão entre estoque e alvo, multiplicada por uma flutuação
+-- lenta e aleatória. Quem consome um item mantém o estoque abaixo do alvo e
+-- paga mais por ele; quem produz, o contrário.
 --
 -- O mercado avança em passos de uma hora de jogo. Hoje o avanço acontece em
 -- bloco quando o jogador pousa (Economy.catchUp); as funções trabalham só com
@@ -38,7 +39,26 @@ Economy.SPREAD = 0.1
 local function industry(key)
   local data = config.Industries[key]
   if not data then error("Indústria não definida: " .. tostring(key)) end
+  for _, list in ipairs({ data.inputs or {}, data.outputs or {} }) do
+    for item in pairs(list) do
+      if not config.Items[item] then
+        error("Item não definido em data/items.lua: " .. item .. " (indústria " .. key .. ")")
+      end
+    end
+  end
   return data
+end
+
+-- Itens que as indústrias de um mercado consomem e produzem, como conjuntos
+-- { [item] = true }. A interface do mercado destaca os consumidos.
+function Economy.uses(marketData)
+  local consumed, produced = {}, {}
+  for key in pairs(marketData.industries or {}) do
+    local ind = industry(key)
+    for item in pairs(ind.inputs or {}) do consumed[item] = true end
+    for item in pairs(ind.outputs or {}) do produced[item] = true end
+  end
+  return consumed, produced
 end
 
 local function volume(item)
@@ -46,8 +66,9 @@ local function volume(item)
 end
 
 -- Estoque-alvo de cada item num mercado (marketData: `market` de um landable
--- em data/landables.lua). Itens que nenhuma indústria usa e que não estão no
--- estoque inicial têm alvo 0: o mercado compra, mas o preço cai rápido.
+-- em data/landables.lua). `stock` é opcional: serve para um item que nenhuma
+-- indústria do local usa. Os demais itens têm alvo 0: o mercado compra, mas o
+-- preço cai rápido.
 function Economy.targets(marketData)
   local targets = {}
   for key, count in pairs(marketData.industries or {}) do
@@ -161,10 +182,9 @@ end
 -- prejuízo; o lucro vem de levar o item até onde vale mais.
 function Economy.prices(marketData, items, noise)
   local targets = Economy.targets(marketData)
-  local demanded = marketData.demanded or {}
   local prices = {}
   for item, data in pairs(config.Items) do
-    local mid = data.basePrice * (demanded[item] or 1.0)
+    local mid = data.basePrice
       * Economy.stockFactor(items[item] or 0, targets[item] or 0)
       * ((noise or {})[item] or 1)
     prices[item] = {
