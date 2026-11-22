@@ -180,8 +180,16 @@ function WorldManager.spawnSystem(systemId)
           end
         end
       end
-      config.ShipEntity(player.x, player.y, player.name, true, property.name, property.type, player.landedAt, property.weapons, property.cargo)
+      config.ShipEntity(player.x, player.y, player.name, true, property.name, property.type, nil, property.weapons, property.cargo)
     end
+  end
+
+  -- Cenário que começa pousado: player.landedAt é a tabela { name = ... } de
+  -- data/starts.lua, não o landable. A nave precisa apontar para a entidade,
+  -- senão o mercado é gerado numa tabela solta e a estação aparece vazia.
+  if player.landedAt then
+    WorldManager.placeLanded(player.landedAt.name)
+    player.landedAt = false
   end
 
   config.Entities.sortByLayer()
