@@ -227,4 +227,33 @@ return {
   },
   },
   },
+["Lilium"] = {
+  name = "Lírio",
+  description = "O Lírio foi um dos primeiros planetas habitados a receber a visita dos Bhikkhus, no início da Época Galática. Os visitantes trouxeram consigo inovações tecnológicas tão incríveis que os lirianos os tomaram como deuses, ajudando os Bhikkus em sua jornada para unir toda a galáxia habitada. Foi apenas depois de 300 anos que os Bhikkus finalmente conseguiram dissuadir a população local da crença de que eles eram seres divinos. Hoje o planeta é um grande produtor de alimentos e se posiciona em uma rota comercial extremamente lucrativa, além de servir como um polo histórico e cultural da galáxia.",
+  --x = -2000,
+  --y = 0,
+  orbitRadius = 10000,
+  orbitAngle  = 1,
+  orbitSpeed  = 0.04,
+  radius = 400,
+  type = "planet",
+  color = {0.5,0.3,0.8,1},
+  buttons = {
+    spaceport = { description = "Lírio tem 8 portos espaciais, sendo o maior deles o #7. Este porto fica localizado no topo de um platô gigantesco, o ar é rarefeito e após o pouso as tripulações precisam aguardar por um tubo de transporte (praticamente uma esteira transportadora em formato de tobogã) para entrarem na área interna do porto sem sofrerem hipóxia." },
+    bar       = { description = "A bebida principal de Lírio é o saquê de arroz. Um bar de saquê liriano possui um balcão, com bancos de um lado e garrafas de outro, não é da cultura liriana beber em mesas privadas, portanto os bares são bem pequenos e intimistas."},
+    trade     = {}
+  },
+  market = {
+  capacity = 20000,
+  demanded = {
+  ["Titanium Ore"] = 2,
+  ["Phosporus"] = 4,
+  },
+  stock = {
+  { item = "Rice Crisp",   min = 30, max = 500 },
+  { item = "Rice Grain",   min = 500, max = 800 },
+  { item = "Clothing",   min = 30,   max = 100  },
+  },
+  },
+  },
 }
