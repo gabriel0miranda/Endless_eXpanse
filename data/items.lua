@@ -68,8 +68,16 @@ name = "Lingote de Prata",
 rarity = "rare",
 category = "good",
 volume = 5,
-color = {192/255, 192/255, 192/255},
+color = {1, 215/255, 0,1},
 basePrice = 260
+},
+["Gold Ingot"] = {
+name = "Lingote de Ouro",
+rarity = "rare",
+category = "good",
+volume = 5,
+color = {1,0.8,0,1},
+basePrice = 290
 },
 ["Debris"] = {
 name = "Detritos",
@@ -118,6 +126,14 @@ category = "food",
 volume = 1,
 color = {1,1,1,1},
 basePrice = 20
+},
+["Hemp"] = {
+name = "Cânhamo",
+rarity = "common",
+category = "good",
+volume = 1,
+color = {0.1,0.6,0.4,1},
+basePrice = 15
 },
 ["Clothing"] = {
 name = "Roupas",

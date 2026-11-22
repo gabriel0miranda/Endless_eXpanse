@@ -13,9 +13,7 @@ return {
   name    = "Mina de Ferro",
   outputs = { ["Iron Ore"] = 10 },
 },
-["Sulfur Vents"] = {
-  name    = "Extração de Enxofre",
-  outputs = { ["Sulfur"] = 12 },
+["Sulfur Vents"] = { name    = "Extração de Enxofre", outputs = { ["Sulfur"] = 12 },
 },
 ["Rice Paddies"] = {
   name    = "Arrozais",
@@ -25,6 +23,11 @@ return {
 ["Water Plant"] = {
   name    = "Usina de Água",
   outputs = { ["Water"] = 10 },
+},
+["Hemp Greenhouse"] = {
+  name    = "Estufa de Cânhamo",
+  inputs = { ["Water"] = 10, ["Phosporus"] = 2, ["Energy Cell"] = 4},
+  outputs = { ["Hemp"] = 35},
 },
 
 -- Transformação
@@ -50,7 +53,7 @@ return {
 },
 ["Textile Mill"] = {
   name    = "Tecelagem",
-  inputs  = { ["Rice Grain"] = 2 },
+  inputs  = { ["Hemp"] = 2, ["Water"] = 2 },
   outputs = { ["Clothing"] = 3 },
 },
 ["Cocaine Lab"] = {
@@ -78,6 +81,6 @@ return {
 },
 ["Pilgrim Hub"] = {
   name    = "Polo de Peregrinação",
-  inputs  = { ["Titanium Ore"] = 1, ["Water"] = 4 },
+  inputs  = { ["Gold Ore"] = 1, ["Water"] = 4 },
 },
 }

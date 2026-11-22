@@ -105,7 +105,7 @@ return {
   ["Titanium Ore"] = 2.0,
   },
   stock = {
-  { item = "Steel Sheets",   min = 100, max = 500 },
+  { item = "Gold Ingot",   min = 200, max = 800 },
   { item = "Silver Ingot",   min = 200, max = 800 },
   { item = "Titanium Alloy", min = 0,   max = 50  },
   },
