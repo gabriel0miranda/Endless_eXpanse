@@ -25,6 +25,7 @@ return {
 --  },
   market = {
     capacity = 20000,
+    industries = { ["Luxury Colony"] = 2 },  -- data/industries.lua
     demanded = {
         ["Silver Ore"]   = 2.0,
         ["Cocaine"]      = 3.0,
@@ -51,6 +52,7 @@ return {
   },
   market = {
     capacity = 20000,
+    industries = { ["Rice Paddies"] = 1, ["Water Plant"] = 2, ["Textile Mill"] = 1, ["Farming Population"] = 2 },  -- data/industries.lua
     demanded = {
     },
     stock = {},
@@ -96,6 +98,7 @@ return {
   },
   market = {
   capacity = 20000,
+  industries = { ["Silver Smelter"] = 1, ["Titanium Foundry"] = 1 },  -- data/industries.lua
   demanded = {
   ["Iron Ore"]     = 1.8,
   ["Silver Ore"]   = 2.0,
@@ -125,6 +128,7 @@ return {
   },
   market = {
     capacity = 20000,
+    industries = { ["Steel Mill"] = 1 },  -- data/industries.lua
     demanded = {
     },
     stock = {},
@@ -187,6 +191,7 @@ return {
   },
   market = {
   capacity = 20000,
+  industries = { ["Iron Mine"] = 1, ["Military Base"] = 1 },  -- data/industries.lua
   demanded = {
   ["Steel Sheets"] = 4.0,
   ["Titanium Alloy"] = 6.0,
@@ -215,6 +220,7 @@ return {
   },
   market = {
   capacity = 20000,
+  industries = { ["Sulfur Vents"] = 1, ["Cocaine Lab"] = 1, ["Cloud City"] = 1 },  -- data/industries.lua
   demanded = {
   ["Cocaine"]     = 2.0,
   ["Carbon"]      = 1.5,
@@ -245,6 +251,7 @@ return {
   },
   market = {
   capacity = 20000,
+  industries = { ["Rice Paddies"] = 1, ["Water Plant"] = 1, ["Rice Crisp Factory"] = 1, ["Textile Mill"] = 1, ["Pilgrim Hub"] = 1 },  -- data/industries.lua
   demanded = {
   ["Titanium Ore"] = 2,
   ["Phosporus"] = 4,

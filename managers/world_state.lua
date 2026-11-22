@@ -10,8 +10,9 @@
 --     funções ou referências a entidades, para o estado poder ir direto para
 --     um arquivo de save.
 --   * NPCs anônimos não são guardados: são gerados de novo a cada visita.
---   * Asteroides e mercados de um sistema só se renovam com o descanso
---     (WorldState.resetSystem).
+--   * Asteroides de um sistema só se renovam com o descanso
+--     (WorldState.resetSystem). Mercados evoluem com o tempo
+--     (systems/economy.lua) e nunca são sorteados de novo.
 local WorldState = {}
 
 WorldState.VERSION = 1
@@ -92,15 +93,12 @@ function WorldState.setLandable(systemId, name, record)
   WorldState.system(systemId).landables[name] = record
 end
 
--- Descanso: o sistema volta a ser gerado na próxima visita (asteroides novos,
--- mercados reabastecidos). A fase orbital dos landables é mantida.
+-- Descanso: os asteroides do sistema voltam a ser gerados na próxima visita.
+-- A fase orbital e o mercado dos landables são mantidos.
 function WorldState.resetSystem(systemId)
   local sys = WorldState.system(systemId)
   sys.asteroids = nil
   sys.storedAt  = nil
-  for _, record in pairs(sys.landables) do
-    record.market = nil
-  end
 end
 
 return WorldState

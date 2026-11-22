@@ -12,6 +12,42 @@ local function getBasePrices()
   return basePrices
 end
 
+-- Mercado de um landable ao pousar: na primeira visita sorteia o estoque;
+-- nas seguintes avança a economia pelas horas passadas desde a última
+-- (systems/economy.lua). Em seguida recalcula os preços.
+function Market.openLandable(trader)
+  local market = trader.market
+  local now = config.Calendar.now()
+  if not market.generated then
+    trader.inventory = config.InventoryComponent(market.capacity, config.Economy.newStock(market.data))
+    market.noise = {}
+    market.updatedAt = now
+    market.generated = true
+    Market.advanceLandable(trader, config.Economy.WARMUP_HOURS)
+  else
+    local hours, updatedAt = config.Economy.elapsedHours(market.updatedAt or now, now)
+    market.updatedAt = updatedAt
+    Market.advanceLandable(trader, hours)
+  end
+  Market.refreshPrices(trader)
+end
+
+function Market.advanceLandable(trader, hours)
+  if hours <= 0 then return end
+  local state = { items = trader.inventory.items, noise = trader.market.noise, capacity = trader.market.capacity }
+  config.Economy.advance(trader.market.data, state, hours)
+  trader.market.noise = state.noise
+  -- Recria o inventário para recalcular o volume ocupado
+  trader.inventory = config.InventoryComponent(trader.market.capacity, state.items)
+end
+
+-- Só landables têm preço derivado do estoque; NPCs usam generateStock
+function Market.refreshPrices(trader)
+  if not trader.market.data then return end
+  trader.market.prices = config.Economy.prices(trader.market.data, trader.inventory.items, trader.market.noise)
+end
+
+-- Estoque e preços fixos de quem não tem economia própria (naves NPC)
 function Market.generateStock(trader)
   local market = {}
   if not trader.market then
@@ -129,6 +165,8 @@ function Market.executeTrade(trader, ship, offering, requesting)
         ship.inventory:add(r.item, r.qty)
     end
     player.credits:add(balance)
+    -- O estoque mudou: no landable, o preço da próxima troca já reflete isso
+    Market.refreshPrices(trader)
 
     return true, balance
 end
