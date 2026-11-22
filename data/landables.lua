@@ -48,7 +48,7 @@ return {
   },
   market = {
     capacity = 20000,
-    industries = { ["Rice Paddies"] = 1, ["Water Plant"] = 2, ["Textile Mill"] = 1, ["Farming Population"] = 2 },  -- data/industries.lua
+    industries = { ["Rice Paddies"] = 1, ["Water Plant"] = 2, ["Hemp Greenhouse"] = 1, ["Textile Mill"] = 1, ["Farming Population"] = 2 },  -- data/industries.lua
     stock = {},
   },
 },
@@ -90,7 +90,7 @@ return {
   },
   market = {
   capacity = 20000,
-  industries = { ["Silver Smelter"] = 1, ["Titanium Foundry"] = 1 },  -- data/industries.lua
+  industries = { ["Smelter"] = 1 },  -- data/industries.lua
   stock = {},
   },
 },
@@ -194,7 +194,7 @@ return {
   },
   market = {
   capacity = 20000,
-  industries = { ["Sulfur Vents"] = 1, ["Cocaine Lab"] = 1, ["Cloud City"] = 1 },  -- data/industries.lua
+  industries = { ["Sulfur Vents"] = 1, ["Hemp Greenhouse"] = 1, ["Cocaine Lab"] = 1, ["Cloud City"] = 1 },  -- data/industries.lua
   stock = {},
   },
   },
@@ -216,7 +216,7 @@ return {
   },
   market = {
   capacity = 20000,
-  industries = { ["Rice Paddies"] = 1, ["Water Plant"] = 1, ["Rice Crisp Factory"] = 1, ["Textile Mill"] = 1, ["Pilgrim Hub"] = 1 },  -- data/industries.lua
+  industries = { ["Rice Paddies"] = 1, ["Water Plant"] = 1, ["Hemp Greenhouse"] = 1, ["Rice Crisp Factory"] = 1, ["Textile Mill"] = 1, ["Pilgrim Hub"] = 1 },  -- data/industries.lua
   stock = {},
   },
   },

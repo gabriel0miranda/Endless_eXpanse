@@ -60,6 +60,15 @@ describe("Economy", function()
     assert.is_true(scarce.sell > scarce.buy and abundant.sell > abundant.buy)
   end)
 
+  it("roda cada receita de uma indústria de forma independente", function()
+    config.Industries["Smelter"] = { recipes = {
+      { inputs = { ["Silver Ore"] = 2 }, outputs = { ["Silver Ingot"] = 1 } },
+      { inputs = { ["Gold Ore"] = 2 },   outputs = { ["Gold Ingot"] = 1 } },
+    } }
+    -- Sem ouro, a prata continua saindo
+    assert.are.same({ ["Silver Ingot"] = 3 }, produce({ industries = { ["Smelter"] = 1 } }, { ["Silver Ore"] = 6 }, 3))
+  end)
+
   it("separa os itens consumidos dos produzidos", function()
     local consumed, produced = Economy.uses({ industries = { ["Mill"] = 1 } })
     assert.are.same({ ["Iron Ore"] = true }, consumed)

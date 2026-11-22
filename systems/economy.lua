@@ -36,17 +36,22 @@ Economy.WARMUP_HOURS = 72
 -- Margem entre o que a estação paga e o que ela cobra (0.1 = ±10% do preço médio)
 Economy.SPREAD = 0.1
 
-local function industry(key)
+-- Receitas de uma indústria. Uma indústria tem uma receita (`inputs` e
+-- `outputs` direto na tabela) ou várias, independentes, em `recipes`.
+local function recipes(key)
   local data = config.Industries[key]
   if not data then error("Indústria não definida: " .. tostring(key)) end
-  for _, list in ipairs({ data.inputs or {}, data.outputs or {} }) do
-    for item in pairs(list) do
-      if not config.Items[item] then
-        error("Item não definido em data/items.lua: " .. item .. " (indústria " .. key .. ")")
+  local list = data.recipes or { data }
+  for _, recipe in ipairs(list) do
+    for _, items in ipairs({ recipe.inputs or {}, recipe.outputs or {} }) do
+      for item in pairs(items) do
+        if not config.Items[item] then
+          error("Item não definido em data/items.lua: " .. item .. " (indústria " .. key .. ")")
+        end
       end
     end
   end
-  return data
+  return list
 end
 
 -- Itens que as indústrias de um mercado consomem e produzem, como conjuntos
@@ -54,9 +59,10 @@ end
 function Economy.uses(marketData)
   local consumed, produced = {}, {}
   for key in pairs(marketData.industries or {}) do
-    local ind = industry(key)
-    for item in pairs(ind.inputs or {}) do consumed[item] = true end
-    for item in pairs(ind.outputs or {}) do produced[item] = true end
+    for _, recipe in ipairs(recipes(key)) do
+      for item in pairs(recipe.inputs or {}) do consumed[item] = true end
+      for item in pairs(recipe.outputs or {}) do produced[item] = true end
+    end
   end
   return consumed, produced
 end
@@ -72,12 +78,13 @@ end
 function Economy.targets(marketData)
   local targets = {}
   for key, count in pairs(marketData.industries or {}) do
-    local ind = industry(key)
-    for item, rate in pairs(ind.inputs or {}) do
-      targets[item] = (targets[item] or 0) + rate * count * Economy.TARGET_HOURS
-    end
-    for item, rate in pairs(ind.outputs or {}) do
-      targets[item] = (targets[item] or 0) + rate * count * Economy.TARGET_HOURS
+    for _, recipe in ipairs(recipes(key)) do
+      for item, rate in pairs(recipe.inputs or {}) do
+        targets[item] = (targets[item] or 0) + rate * count * Economy.TARGET_HOURS
+      end
+      for item, rate in pairs(recipe.outputs or {}) do
+        targets[item] = (targets[item] or 0) + rate * count * Economy.TARGET_HOURS
+      end
     end
   end
   for _, entry in ipairs(marketData.stock or {}) do
@@ -112,25 +119,29 @@ local function add(items, item, qty)
   items[item] = total > 0 and total or nil
 end
 
--- Uma hora de produção: cada indústria trabalha na fração que o insumo mais
--- escasso permite, e a produção para quando o armazém enche
+-- Uma hora de produção: cada receita trabalha na fração que o seu insumo
+-- mais escasso permite, e a produção para quando o armazém enche
+local function runRecipe(recipe, count, items, capacity)
+  local fraction = 1
+  for item, rate in pairs(recipe.inputs or {}) do
+    fraction = math.min(fraction, (items[item] or 0) / (rate * count))
+  end
+  if fraction <= 0 then return end
+  for item, rate in pairs(recipe.inputs or {}) do
+    add(items, item, -math.min(items[item] or 0, rate * count * fraction))
+  end
+  local free = capacity - usedVolume(items)
+  for item, rate in pairs(recipe.outputs or {}) do
+    local qty = math.min(rate * count * fraction, math.max(0, free) / volume(item))
+    add(items, item, qty)
+    free = free - qty * volume(item)
+  end
+end
+
 local function runIndustries(marketData, items, capacity)
   for key, count in pairs(marketData.industries or {}) do
-    local ind = industry(key)
-    local fraction = 1
-    for item, rate in pairs(ind.inputs or {}) do
-      fraction = math.min(fraction, (items[item] or 0) / (rate * count))
-    end
-    if fraction > 0 then
-      for item, rate in pairs(ind.inputs or {}) do
-        add(items, item, -math.min(items[item] or 0, rate * count * fraction))
-      end
-      local free = capacity - usedVolume(items)
-      for item, rate in pairs(ind.outputs or {}) do
-        local qty = math.min(rate * count * fraction, math.max(0, free) / volume(item))
-        add(items, item, qty)
-        free = free - qty * volume(item)
-      end
+    for _, recipe in ipairs(recipes(key)) do
+      runRecipe(recipe, count, items, capacity)
     end
   end
 end

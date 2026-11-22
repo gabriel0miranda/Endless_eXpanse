@@ -2,6 +2,8 @@
 --
 -- Cada indústria consome `inputs` e produz `outputs`, em unidades por hora de
 -- jogo. Sem insumo suficiente, ela trabalha na fração que o estoque permite.
+-- Uma indústria com várias receitas independentes as lista em `recipes`: a
+-- falta de insumo numa receita não para as outras.
 -- Indústria sem `inputs` produz do nada (mina, fazenda); sem `outputs`, só
 -- consome (população). Os landables usam as indústrias em
 -- `market.industries = { [chave] = quantidade }` (data/landables.lua).
@@ -36,15 +38,13 @@ return {
   inputs  = { ["Iron Ore"] = 10, ["Carbon"] = 2 },
   outputs = { ["Steel Sheets"] = 5 },
 },
-["Silver Smelter"] = {
-  name    = "Fundição de Prata",
-  inputs  = { ["Silver Ore"] = 6 },
-  outputs = { ["Silver Ingot"] = 3 },
-},
-["Titanium Foundry"] = {
-  name    = "Fundição de Titânio",
-  inputs  = { ["Titanium Ore"] = 4, ["Sulfur"] = 1 },
-  outputs = { ["Titanium Alloy"] = 1 },
+["Smelter"] = {
+  name    = "Fundição",
+  recipes = {
+    { inputs = { ["Silver Ore"] = 6 },                    outputs = { ["Silver Ingot"] = 3 } },
+    { inputs = { ["Gold Ore"] = 6 },                      outputs = { ["Gold Ingot"] = 3 } },
+    { inputs = { ["Titanium Ore"] = 4, ["Sulfur"] = 1 },  outputs = { ["Titanium Alloy"] = 1 } },
+  },
 },
 ["Rice Crisp Factory"] = {
   name    = "Fábrica de Biscoito de Arroz",

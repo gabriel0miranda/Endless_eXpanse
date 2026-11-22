@@ -68,7 +68,7 @@ name = "Lingote de Prata",
 rarity = "rare",
 category = "good",
 volume = 5,
-color = {1, 215/255, 0,1},
+color = {140/255, 140/255, 148/255},
 basePrice = 260
 },
 ["Gold Ingot"] = {
