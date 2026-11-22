@@ -124,7 +124,41 @@ return {
     },
     wormholes    = {
       { name = "To The Wall", x=WEST.x, y=WEST.y, toSystem = 3},
-      --{ name = "To Bone Zone", x=EAST.x, y=EAST.y, toSystem = 5},
+      { name = "To Passage", x=EAST.x, y=EAST.y, toSystem = 5},
+      --{ name = "To Bone Zone", x=NORTH.x, y=NORTH.y, toSystem = 7},
+      --{ name = "To Lockdown", x=SOUTH.x, y=SOUTH.y, toSystem = 8},
+    },
+  },
+
+  [5] = {
+    name         = "Passage",
+    starX        = 2000,
+    starY        = 2000,
+    starMass     = 80000,
+    starColor    = {1,0.8,0.2,1},
+    population = {
+      weights = {
+        ["Pirate"] = 0,
+        ["Taxi"] = 2.2,
+      },
+      categoryWeights = {
+        faction = { ["Ballestra"] = 0.5, ["Bhikku"] = 1.0},
+      },
+      variance = 50,
+    },
+    asteroidCount=42,
+    asteroidOres = {
+      {item="Titanium Ore", min=2, max=11},
+      {item="Carbon", min=4,max=15},
+      {item="Iron Ore", min=4, max=10},
+      {item="Water", min=3, max=8},
+    },
+    landables    = {
+      "Lilium",
+    },
+    wormholes    = {
+      { name = "To Flag's Peak", x=WEST.x, y=WEST.y, toSystem = 4},
+      --{ name = "To Breath", x=EAST.x, y=EAST.y, toSystem = 5},
     },
   },
 }

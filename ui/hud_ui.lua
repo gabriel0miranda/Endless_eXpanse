@@ -536,6 +536,25 @@ end
 --   opts.hullShieldCorner — HudUI.Corner, padrão BOTTOM_LEFT
 --   opts.energyCorner     — HudUI.Corner, padrão TOP_RIGHT
 --   opts.minimapCorner    - HudUI.Corner, padrão BOTTOM_RIGHT
+-- Data e hora do jogo (ver managers/calendar.lua)
+local function drawClock(corner)
+  local now  = config.Calendar.now()
+  local date = config.Calendar.formatDate(now)
+  local time = config.Calendar.formatTime(now)
+  local w = math.max(fontLabel:getWidth(date), fontLog:getWidth(time)) + PADDING * 2
+  local h = fontLabel:getHeight() + fontLog:getHeight() + PADDING * 2 + 2
+  local x, y = getCornerPosition(corner, w, h)
+
+  rect(x, y, w, h, C.bg)
+  rect(x, y, w, h, C.border, "line")
+  love.graphics.setFont(fontLog)
+  sc(C.textBright)
+  love.graphics.print(time, x + PADDING, y + PADDING)
+  love.graphics.setFont(fontLabel)
+  sc(C.textNormal)
+  love.graphics.print(date, x + PADDING, y + PADDING + fontLog:getHeight() + 2)
+end
+
 function HudUI.draw(playerFlagShip, camera, opts)
   if not playerFlagShip then return end
   initFonts()
@@ -544,6 +563,7 @@ function HudUI.draw(playerFlagShip, camera, opts)
   drawHullShieldPanel(playerFlagShip, opts.hullShieldCorner or HudUI.Corner.BOTTOM_LEFT)
   drawEnergyPanel(playerFlagShip, opts.energyCorner or HudUI.Corner.TOP_RIGHT)
   drawMinimap(playerFlagShip, opts.minimapCorner or HudUI.Corner.BOTTOM_RIGHT, camera)
+  drawClock(opts.clockCorner or HudUI.Corner.TOP_LEFT)
   drawFeed()
   drawTargetInfo(camera)
 

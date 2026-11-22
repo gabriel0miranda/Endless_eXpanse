@@ -39,6 +39,14 @@ volume = 2,
 color = {224/255, 167/255, 11/255},
 basePrice = 15
 },
+["Phosporus"] = {
+name = "Fósforo",
+rarity = "rare",
+category = "good",
+volume = 2,
+color = {1,0.1,0,1},
+basePrice = 40
+},
 ["Titanium Alloy"] = {
 name = "Liga de Titânio",
 rarity = "rare",
@@ -94,5 +102,29 @@ category = "good",
 volume = 1,
 color = {0.1,0.3,0.9,1},
 basePrice = 50
+},
+["Rice Grain"] = {
+name = "Grãos de Arroz",
+rarity = "common",
+category = "food",
+volume = 1,
+color = {1,1,1,1},
+basePrice = 10
+},
+["Rice Crisp"] = {
+name = "Biscoito de Arroz",
+rarity = "common",
+category = "food",
+volume = 1,
+color = {1,1,1,1},
+basePrice = 20
+},
+["Clothing"] = {
+name = "Roupas",
+rarity = "common",
+category = "good",
+volume = 2,
+color = {0.3,0.2,1,1},
+basePrice = 80
 },
 }

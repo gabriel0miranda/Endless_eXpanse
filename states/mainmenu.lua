@@ -86,7 +86,7 @@ local function executeAction(action)
           maxLenght = 32,
           onConfirm = function(text)
             playerName = text
-            config.WorldManager.newGame(chosenStart.starting_systemId)
+            config.WorldManager.newGame(chosenStart)
             config.PlayerEntity(chosenStart, playerName)
             config.DialogueUI.open({
               text = chosenStart.description,

@@ -65,5 +65,13 @@ return {
   faction = "Pirate",
   aggressive = true,
   baseDensity = 0.0003,
-}
+},
+["Bhikku Census Taker"] = {
+  name = "Censor Bhikku",
+  description = "Unidade de reconhecimento e catálogo de sistemas, planetas e populações da galáxia.",
+  ship = "O-lopa LTV-1",
+  faction = "Bhikku",
+  aggressive = false,
+  baseDensity = 0.0001,
+},
 }
