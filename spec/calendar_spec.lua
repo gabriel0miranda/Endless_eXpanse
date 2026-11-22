@@ -6,7 +6,9 @@ describe("Calendar", function()
 
   before_each(function()
     Helper.setup()
-    config.CalendarData = require("data.calendar")
+    -- Cópia sem nomes de mês: os testes usam o formato numérico, salvo quando dizem o contrário
+    config.CalendarData = config.DeepCopy(require("data.calendar"))
+    config.CalendarData.monthNames = {}
     config.WorldState = require("managers.world_state")
     config.Calendar = require("managers.calendar")
     Calendar = config.Calendar
@@ -38,7 +40,6 @@ describe("Calendar", function()
     assert.are.equal("01/03/768 E.G. 09:05", Calendar.format(at(768, 3, 1, 9, 5)))
     config.CalendarData.monthNames = { "Primo", "Secundo", "Tertio" }
     assert.are.equal("1 Tertio 768 E.G.", Calendar.formatDate(at(768, 3, 1, 9, 5)))
-    config.CalendarData.monthNames = {}
   end)
 
   it("avança 1 minuto de jogo por segundo real em voo", function()
