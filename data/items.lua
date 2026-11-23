@@ -39,7 +39,7 @@ volume = 2,
 color = {224/255, 167/255, 11/255},
 basePrice = 15
 },
-["Phosporus"] = {
+["Phosphorus"] = {
 name = "Fósforo",
 rarity = "rare",
 category = "good",

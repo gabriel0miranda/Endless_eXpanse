@@ -17,6 +17,33 @@ SaveManager.VERSION = 1
 
 local FILE = "save.lua"
 
+-- Itens renomeados em data/items.lua: chave antiga → nova. Saves antigos
+-- guardam a chave antiga em estoques, cargas e sortimentos.
+SaveManager.ITEM_RENAMES = {
+  ["Phosporus"] = "Phosphorus",
+}
+
+-- Troca, no lugar, as chaves e os valores de texto renomeados em toda a tabela
+function SaveManager.renameItems(t, seen)
+  local renameItems = SaveManager.renameItems
+  seen = seen or {}
+  if seen[t] then return end
+  seen[t] = true
+  local renamed = {}
+  for k, v in pairs(t) do
+    if type(v) == "table" then
+      renameItems(v, seen)
+    elseif type(v) == "string" and SaveManager.ITEM_RENAMES[v] then
+      t[k] = SaveManager.ITEM_RENAMES[v]
+    end
+    if SaveManager.ITEM_RENAMES[k] then renamed[k] = SaveManager.ITEM_RENAMES[k] end
+  end
+  for old, new in pairs(renamed) do
+    if t[new] == nil then t[new] = t[old] end
+    t[old] = nil
+  end
+end
+
 local function player()
   return config.Entities.getByTag("player")[1]
 end
@@ -100,6 +127,7 @@ function SaveManager.restore(data)
     return false, "Cenário inicial desconhecido: " .. tostring(data.player.start)
   end
 
+  SaveManager.renameItems(data)
   config.Entities.clear()
   config.WorldState.load(data.world)
 
