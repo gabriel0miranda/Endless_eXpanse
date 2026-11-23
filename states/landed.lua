@@ -93,7 +93,17 @@ local function doDepart(shipEntity)
     config.GameState.switch("playing", { resuming = true })
 end
 
-local function handleDepart()
+local handleDepart
+
+-- Clique em decolar: primeiro as mensagens dos gatilhos de "depart"; a
+-- decolagem só segue depois que o jogador fecha a última
+local function requestDepart()
+    activePanel = nil
+    local ctx = { landable = playerFlagShip.landedAt and playerFlagShip.landedAt.name }
+    config.Triggers.fire("depart", ctx, handleDepart)
+end
+
+handleDepart = function()
     local ships = {}
     for _, e in ipairs(config.Entities.with("isFlagShip")) do
         -- pega a flagship atual
@@ -446,6 +456,9 @@ function Landed.onEnter()
     -- Autosave a cada pouso (o mercado já existe, então entra no save)
     config.SaveManager.save()
 
+    -- Mensagens dos gatilhos de pouso; o disparo entra no próximo save
+    config.Triggers.fire("land", { landable = playerFlagShip.landedAt.name })
+
     -- Constrói botões a partir dos dados do landable
     local allBtns = {}
     allButtonsFlat = {}
@@ -557,7 +570,7 @@ local function activateButton(key)
     elseif key == "rest" then
       handleRest()
     elseif key == "depart" then
-      handleDepart()
+      requestDepart()
     else
       activePanel = key
     end
@@ -600,8 +613,8 @@ function Landed.update(dt)
         end
     end
 
-    if activePanel == "depart" or config.Input.state.ship_launch then
-      handleDepart()
+    if (activePanel == "depart" or config.Input.state.ship_launch) and not config.DialogueUI.isOpen() then
+      requestDepart()
     end
 end
 

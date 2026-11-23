@@ -23,6 +23,7 @@ WorldState.VERSION = 1
 ---@field startDate number
 ---@field currentSystemId integer
 ---@field systems table<string, {landables: table<string, table>, asteroids: table[]|nil, storedAt: number|nil}>
+---@field triggers table<string, integer>
 
 ---@type WorldStateData
 local state = nil
@@ -36,6 +37,7 @@ function WorldState.new(startingSystemId, startDate)
     startDate       = startDate or 0,
     currentSystemId = startingSystemId,
     systems         = {},
+    triggers        = {},  -- id do gatilho → quantas vezes disparou
   }
 end
 
@@ -48,6 +50,7 @@ end
 function WorldState.load(data)
   state = data
   state.startDate = state.startDate or 0  -- saves anteriores ao calendário
+  state.triggers  = state.triggers or {}  -- saves anteriores aos gatilhos
 end
 
 function WorldState.time()
@@ -91,6 +94,15 @@ end
 
 function WorldState.setLandable(systemId, name, record)
   WorldState.system(systemId).landables[name] = record
+end
+
+-- Gatilhos de mensagem (managers/triggers.lua)
+function WorldState.triggerCount(id)
+  return state and state.triggers[id] or 0
+end
+
+function WorldState.markTrigger(id)
+  state.triggers[id] = WorldState.triggerCount(id) + 1
 end
 
 -- Descanso: os asteroides do sistema voltam a ser gerados na próxima visita.
