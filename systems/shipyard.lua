@@ -71,14 +71,22 @@ function Shipyard.buyShip(player, shipType, customName)
   return true, "Ship bought"
 end
 
+-- Vender a nave ativa passa o posto para outra nave da frota. Sem nave
+-- ativa a decolagem não tem o que montar e o jogo congela.
 function Shipyard.sellShip(player, shipEntity)
-  --if shipEntity.isFlagShip then
-  --    return false, "Can't sell flag ship."
-  --end
+  local fleet = Shipyard.getFleet(player)
+  if #fleet <= 1 then
+      return false, "Não dá para vender a única nave da frota."
+  end
 
   local price = Shipyard.getSellPrice(shipEntity.type)
   player.credits.amount = player.credits.amount + price
   player.property:remove(shipEntity)
+
+  if shipEntity.flagShip then
+      shipEntity.flagShip = false
+      Shipyard.setFlagShip(player, Shipyard.getFleet(player)[1])
+  end
 
   return true, "Ship sold"
 end
