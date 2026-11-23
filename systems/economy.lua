@@ -94,6 +94,31 @@ function Economy.targets(marketData)
   return targets
 end
 
+-- Sorteia o sortimento de um mercado com `assortment` (data/landables.lua):
+-- uma lista no formato de `stock`, { { item, min, max }, ... }
+function Economy.rollAssortment(spec)
+  local pool = {}
+  for item, data in pairs(config.Items) do
+    if not (spec.exclude or {})[data.category] then pool[#pool + 1] = item end
+  end
+  table.sort(pool)  -- ordem fixa: o sorteio depende só do gerador
+  local list = {}
+  for _ = 1, math.min(spec.count, #pool) do
+    local item = table.remove(pool, love.math.random(1, #pool))
+    list[#list + 1] = { item = item, min = spec.min, max = spec.max }
+  end
+  return list
+end
+
+-- Dados do mercado com o sortimento atual somado ao `stock` fixo
+function Economy.withAssortment(marketData, assortment)
+  if not assortment then return marketData end
+  local stock = {}
+  for _, entry in ipairs(marketData.stock or {}) do stock[#stock + 1] = entry end
+  for _, entry in ipairs(assortment) do stock[#stock + 1] = entry end
+  return { capacity = marketData.capacity, industries = marketData.industries, stock = stock }
+end
+
 -- Estoque da primeira visita: em volta do alvo, ou na faixa de `stock`
 function Economy.newStock(marketData)
   local items = {}

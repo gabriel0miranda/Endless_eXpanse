@@ -126,6 +126,71 @@ describe("MarketSystem.openLandable", function()
   end)
 end)
 
+describe("Sortimento sorteado", function()
+  local DAY = 24 * 3600
+  local spec = { count = 4, min = 100, max = 100, days = 7, exclude = { trash = true } }
+
+  before_each(function()
+    Helper.setup()
+    config.CalendarData = require("data.calendar")
+    config.WorldState = require("managers.world_state")
+    config.Calendar = require("managers.calendar")
+    config.WorldState.new(1, 0)
+  end)
+
+  local function station()
+    local data = { capacity = 100000, stock = {}, assortment = spec }
+    return { market = { generated = false, data = data, capacity = data.capacity, demanded = {}, prices = {} } }
+  end
+
+  local function names(assortment)
+    local set = {}
+    for _, entry in ipairs(assortment) do set[entry.item] = true end
+    return set
+  end
+
+  it("sorteia itens distintos fora das categorias excluídas", function()
+    for _ = 1, 30 do
+      local list = config.Economy.rollAssortment(spec)
+      local set = names(list)
+      local n = 0
+      for item in pairs(set) do
+        n = n + 1
+        assert.are_not.equal("trash", config.Items[item].category)
+      end
+      assert.are.equal(4, n)
+    end
+  end)
+
+  it("vende os itens sorteados perto do preço base", function()
+    local s = station()
+    config.MarketSystem.openLandable(s)
+    for _, entry in ipairs(s.market.assortment) do
+      assert.is_true((s.inventory.items[entry.item] or 0) > 0, entry.item)
+      local base = config.Items[entry.item].basePrice
+      local mid = (s.market.prices[entry.item].buy + s.market.prices[entry.item].sell) / 2
+      assert.is_true(mid > base * 0.7 and mid < base * 1.3, entry.item .. ": " .. mid .. " vs " .. base)
+    end
+  end)
+
+  it("troca o sortimento depois do prazo, com estoque nos itens novos", function()
+    local s = station()
+    config.MarketSystem.openLandable(s)
+    local first = s.market.assortment
+
+    config.WorldState.advance(config.Calendar.toSimSeconds(3 * DAY))
+    config.MarketSystem.openLandable(s)
+    assert.are.equal(first, s.market.assortment)  -- ainda no prazo
+
+    config.WorldState.advance(config.Calendar.toSimSeconds(5 * DAY))
+    config.MarketSystem.openLandable(s)
+    assert.are_not.equal(first, s.market.assortment)
+    for _, entry in ipairs(s.market.assortment) do
+      assert.is_true((s.inventory.items[entry.item] or 0) > 0, entry.item)
+    end
+  end)
+end)
+
 describe("Dados da economia", function()
   before_each(function() Helper.setup() end)
 
@@ -146,6 +211,65 @@ describe("Dados da economia", function()
     for key in pairs(config.Industries) do
       local ok, err = pcall(config.Economy.uses, { industries = { [key] = 1 } })
       assert.is_true(ok, tostring(err))
+    end
+  end)
+end)
+
+-- Cada item precisa de uma fonte (indústria ou asteroide) e de um consumidor
+-- (insumo de alguma indústria). Sem isso, o item some dos mercados quando o
+-- comércio de fundo der lugar ao tick global, ou não tem rota que dê lucro.
+-- O sortimento da Estação de Troca não conta: ele só revende.
+describe("Cadeias de suprimento", function()
+  -- Exceções conhecidas, com o motivo; apagar quando forem resolvidas
+  local KNOWN = {
+    noSource = {},
+    noConsumer = {
+      ["Gold Ingot"] = "fica para a PR de expansão do comércio",
+    },
+  }
+
+  local sources, consumers
+
+  before_each(function()
+    Helper.setup()
+    sources, consumers = {}, {}
+    for name, landable in pairs(require("data.landables")) do
+      if landable.market then
+        local consumed, produced = config.Economy.uses(landable.market)
+        for item in pairs(produced) do sources[item] = name end
+        for item in pairs(consumed) do consumers[item] = name end
+      end
+    end
+    for _, sys in pairs(require("data.systems")) do
+      for _, ore in ipairs(sys.asteroidOres or {}) do sources[ore.item] = sources[ore.item] or sys.name end
+    end
+  end)
+
+  local function check(map, known, message)
+    local missing = {}
+    for item, data in pairs(config.Items) do
+      if data.category ~= "trash" and not map[item] and not known[item] then
+        missing[#missing + 1] = item
+      end
+    end
+    table.sort(missing)
+    assert.are.same({}, missing, message)
+  end
+
+  it("todo item tem uma fonte", function()
+    check(sources, KNOWN.noSource, "itens sem indústria que os produza nem asteroide que os contenha")
+  end)
+
+  it("todo item tem um consumidor", function()
+    check(consumers, KNOWN.noConsumer, "itens que nenhuma indústria consome")
+  end)
+
+  it("as exceções conhecidas ainda são exceções", function()
+    for item, reason in pairs(KNOWN.noConsumer) do
+      assert.is_nil(consumers[item], item .. " já tem consumidor: remova de KNOWN (" .. reason .. ")")
+    end
+    for item, reason in pairs(KNOWN.noSource) do
+      assert.is_nil(sources[item], item .. " já tem fonte: remova de KNOWN (" .. reason .. ")")
     end
   end)
 end)

@@ -26,6 +26,10 @@ return {
   name    = "Usina de Água",
   outputs = { ["Water"] = 10 },
 },
+["Phosphorus Extractor"] = {
+  name    = "Extração de Fósforo",
+  outputs = { ["Phosporus"] = 8 },
+},
 ["Silicon Mine"] = {
   name    = "Mina de Silício",
   outputs = { ["Silicon"] = 15 },

@@ -118,6 +118,7 @@ return {
     asteroidCount=22,
     asteroidOres = {
       {item="Silicon", min=0, max=4},
+      {item="Phosporus", min=0, max=3},
       {item="Titanium Ore", min=0, max=4},
       {item="Carbon", min=3,max=10},
       {item="Debris", min=4, max=10},
@@ -154,6 +155,7 @@ return {
     asteroidCount=42,
     asteroidOres = {
       {item="Silicon", min=0, max=4},
+      {item="Phosporus", min=0, max=3},
       {item="Titanium Ore", min=2, max=11},
       {item="Carbon", min=4,max=15},
       {item="Iron Ore", min=4, max=10},
