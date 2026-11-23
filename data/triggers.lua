@@ -20,13 +20,9 @@ return {
   once = true,
   conditions = { start = "Lost Peregrine", landable = "Lilium" },
   speaker = "Irmão Jiko",
-  -- Texto provisório
-  text = "Uma mensagem gravada pisca no painel da Corélia antes da decolagem.\n\n"
-    .. "\"Se você está ouvindo isto, perdeu a caravana. Não fique triste: os Guardiões da Passagem só abrem o caminho uma vez a cada ciclo, e não pudemos esperar. "
-    .. "A nave é sua até nos reencontrarmos.\n\n"
-    .. "O Olho fica além das rotas que você conhece. Siga pelo buraco de minhoca para Flag's Peak e pergunte pelo caminho nas estações. "
-    .. "Os comerciantes sabem mais do que dizem, e créditos soltam a língua de qualquer um. "
-    .. "Leve carga: uma nave vazia é uma viagem desperdiçada.\n\n"
-    .. "Nos vemos no Olho, peregrino.\"",
+  text = "Você encontra uma nota adesiva no painel principal da nave:\n\n"
+    .. "\"Não deu pra te esperar, o grupo ficou impaciente.\n\n"
+    .. "As coordenadas para o Olho estão no mapa da nave.\n\n"
+    .. "Estarei te esperando.\"",
 },
 }
