@@ -44,9 +44,10 @@ return {
       name = "Rastro de Ferrugem",
       type = "NN-Interceptor",
       weapons = {[1] = "Photon Cannon", [2] = "Vacuum Machinegun", [3] = "Predator Missile", [4] = "Proximity Mine", [5] = "EMP"},
+      -- Porão cheio: a NN-Interceptor carrega 50 de volume (4 × 8 + 18 × 1)
       cargo = {
-        ["Iron Ore"] = 12,
-        ["Water"] = 21,
+        ["Iron Ore"] = 4,
+        ["Water"] = 18,
       },
     },
   },

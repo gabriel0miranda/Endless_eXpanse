@@ -72,6 +72,9 @@ return {
   market = {
     capacity = 20000,
     stock = {},
+    -- Sortimento sorteado: `count` itens de categorias fora de `exclude`, com
+    -- estoque entre `min` e `max`, trocados a cada `days` dias de jogo
+    assortment = { count = 6, min = 150, max = 200, days = 7, exclude = { trash = true } },
   },
 },
 ["Mining Depot"] =   {
@@ -214,7 +217,7 @@ return {
   },
   market = {
   capacity = 20000,
-  industries = { ["Sulfur Vents"] = 1, ["Hemp Greenhouse"] = 1, ["Cocaine Lab"] = 1, ["Cloud City"] = 1 },  -- data/industries.lua
+  industries = { ["Sulfur Vents"] = 1, ["Phosphorus Extractor"] = 1, ["Hemp Greenhouse"] = 1, ["Cocaine Lab"] = 1, ["Cloud City"] = 1 },  -- data/industries.lua
   stock = {},
   },
   },

@@ -34,6 +34,8 @@ local function buildMarket(landable_data, record)
     market.generated = true
     market.noise = record.market.noise or {}
     market.updatedAt = record.market.updatedAt  -- nil em saves anteriores à economia
+    market.assortment = record.market.assortment
+    market.assortmentAt = record.market.assortmentAt
     inventory = config.InventoryComponent(market.capacity, record.market.items)
   end
   return market, inventory

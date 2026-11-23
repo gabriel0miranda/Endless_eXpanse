@@ -19,12 +19,16 @@ return {
 },
 ["Rice Paddies"] = {
   name    = "Arrozais",
-  inputs  = { ["Water"] = 6, ["Phosporus"] = 1 },
+  inputs  = { ["Water"] = 6, ["Phosphorus"] = 1 },
   outputs = { ["Rice Grain"] = 30 },
 },
 ["Water Plant"] = {
   name    = "Usina de Água",
   outputs = { ["Water"] = 10 },
+},
+["Phosphorus Extractor"] = {
+  name    = "Extração de Fósforo",
+  outputs = { ["Phosphorus"] = 8 },
 },
 ["Silicon Mine"] = {
   name    = "Mina de Silício",
@@ -32,7 +36,7 @@ return {
 },
 ["Hemp Greenhouse"] = {
   name    = "Estufa de Cânhamo",
-  inputs = { ["Water"] = 10, ["Phosporus"] = 2, ["Energy Cell"] = 4},
+  inputs = { ["Water"] = 10, ["Phosphorus"] = 2, ["Energy Cell"] = 4},
   outputs = { ["Hemp"] = 35},
 },
 

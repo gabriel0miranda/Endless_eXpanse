@@ -100,9 +100,11 @@ function WorldManager.storeSystem()
     local record = not l.wormhole and config.WorldState.landable(systemId, l.name)
     if record and l.market and l.market.generated and l.inventory then
       record.market = {
-        items     = l.inventory.items,
-        noise     = l.market.noise,
-        updatedAt = l.market.updatedAt,
+        items        = l.inventory.items,
+        noise        = l.market.noise,
+        updatedAt    = l.market.updatedAt,
+        assortment   = l.market.assortment,
+        assortmentAt = l.market.assortmentAt,
       }
     end
   end

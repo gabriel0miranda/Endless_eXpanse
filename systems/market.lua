@@ -19,7 +19,11 @@ function Market.openLandable(trader)
   local market = trader.market
   local now = config.Calendar.now()
   if not market.generated then
-    trader.inventory = config.InventoryComponent(market.capacity, config.Economy.newStock(market.data))
+    if market.data.assortment then
+      market.assortment = config.Economy.rollAssortment(market.data.assortment)
+      market.assortmentAt = now
+    end
+    trader.inventory = config.InventoryComponent(market.capacity, config.Economy.newStock(Market.economyData(trader)))
     market.noise = {}
     market.updatedAt = now
     market.generated = true
@@ -28,14 +32,40 @@ function Market.openLandable(trader)
     local hours, updatedAt = config.Economy.elapsedHours(market.updatedAt or now, now)
     market.updatedAt = updatedAt
     Market.advanceLandable(trader, hours)
+    Market.rotateAssortment(trader, now)
   end
   Market.refreshPrices(trader)
+end
+
+-- Dados que a economia usa para este mercado: os fixos de data/landables.lua
+-- mais o sortimento sorteado, se houver
+function Market.economyData(trader)
+  return config.Economy.withAssortment(trader.market.data, trader.market.assortment)
+end
+
+-- Troca o sortimento quando ele vence. Os itens novos chegam com estoque
+-- cheio; os que saíram ficam com alvo 0 e o comércio de fundo os escoa.
+function Market.rotateAssortment(trader, now)
+  local market = trader.market
+  local spec = market.data.assortment
+  if not spec then return end
+  local DAY = config.CalendarData.hoursPerDay * 3600
+  if market.assortment and now - (market.assortmentAt or now) < spec.days * DAY then return end
+  local old = {}
+  for _, entry in ipairs(market.assortment or {}) do old[entry.item] = true end
+  market.assortment = config.Economy.rollAssortment(spec)
+  market.assortmentAt = now
+  for _, entry in ipairs(market.assortment) do
+    if not old[entry.item] then
+      trader.inventory:add(entry.item, entry.min + math.floor(love.math.random() * (entry.max - entry.min)))
+    end
+  end
 end
 
 function Market.advanceLandable(trader, hours)
   if hours <= 0 then return end
   local state = { items = trader.inventory.items, noise = trader.market.noise, capacity = trader.market.capacity }
-  config.Economy.advance(trader.market.data, state, hours)
+  config.Economy.advance(Market.economyData(trader), state, hours)
   trader.market.noise = state.noise
   -- Recria o inventário para recalcular o volume ocupado
   trader.inventory = config.InventoryComponent(trader.market.capacity, state.items)
@@ -44,7 +74,7 @@ end
 -- Só landables têm preço derivado do estoque; NPCs usam generateStock
 function Market.refreshPrices(trader)
   if not trader.market.data then return end
-  trader.market.prices = config.Economy.prices(trader.market.data, trader.inventory.items, trader.market.noise)
+  trader.market.prices = config.Economy.prices(Market.economyData(trader), trader.inventory.items, trader.market.noise)
 end
 
 -- Estoque e preços fixos de quem não tem economia própria (naves NPC)
