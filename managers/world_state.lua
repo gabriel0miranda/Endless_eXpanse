@@ -41,7 +41,7 @@ function WorldState.new(startingSystemId, startDate)
     systems         = {},
     triggers        = {},  -- id do gatilho → quantas vezes disparou
     visited         = { [tostring(startingSystemId)] = true },
-    revealed        = {},  -- sistemas com coordenadas conhecidas (mapa)
+    revealed        = {},  -- sistemas marcados no mapa sem visita
   }
 end
 
@@ -92,7 +92,7 @@ function WorldState.isVisited(systemId)
   return state ~= nil and state.visited[tostring(systemId)] == true
 end
 
--- Sistema cujas coordenadas o jogador conhece sem ter visitado
+-- Sistema marcado no mapa da galáxia sem ter sido visitado
 function WorldState.reveal(systemId)
   state.revealed[tostring(systemId)] = true
 end

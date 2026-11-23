@@ -5,8 +5,8 @@
 -- Conhecimento de um sistema, do mais completo para o mais vago:
 --   "visited"   o jogador já esteve lá: nome, landables e buracos de minhoca
 --   "neighbor"  ligado por buraco de minhoca a um sistema visitado
---   "revealed"  só as coordenadas, vindas do cenário inicial (e, no futuro,
---               de missões ou rumores)
+--   "revealed"  marcado no mapa sem visita, pelo cenário inicial (e, no futuro,
+--               por missões ou rumores)
 --   nil         desconhecido: não aparece no mapa
 -- Um buraco de minhoca só é conhecido a partir de um sistema visitado.
 local Navigation = {}

@@ -23,7 +23,9 @@ local panX, panY = 0, 0   -- centro da tela, em coordenadas do mapa
 local selected  = nil     -- id do sistema selecionado
 local route     = nil     -- ids do sistema atual até o selecionado
 local targeted  = nil     -- nome do buraco de minhoca marcado como alvo
-local drag      = nil     -- { x, y } do mouse no frame anterior
+local drag      = nil     -- { x, y, moved, onNode } do arraste em curso
+local DEFAULT_ZOOM = 3
+local CLICK_SLOP   = 4       -- pixels que um clique pode andar sem virar arraste
 
 local armPoints = nil     -- fundo: pontos dos braços, gerados uma vez
 
@@ -56,7 +58,7 @@ local C = {
 local KNOWLEDGE_LABELS = {
   visited  = "Visitado",
   neighbor = "Não visitado",
-  revealed = "Só coordenadas",
+  revealed = "Marcado no mapa",
 }
 
 -- ─────────────────────────────────────────
@@ -110,10 +112,6 @@ local function toMap(sx, sy)
          panY + (sy - mapRect.y - mapRect.h / 2) / s
 end
 
-local function coords(sys)
-  return string.format("%d, %d", sys.mapX or 0, sys.mapY or 0)
-end
-
 -- Pontos dos braços da espiral, com espalhamento fixo (mesma semente)
 local function buildArms()
   local g = config.GalaxyData
@@ -162,11 +160,11 @@ function GalaxyMapUI.open(opts)
   config.Input.pushContext("galaxymap")
   open      = true
   canTarget = opts and opts.canTarget or false
-  zoom      = 1
-  panX, panY = 0, 0
+  zoom      = DEFAULT_ZOOM
   drag      = nil
-  local current = config.Systems[config.WorldState.currentSystemId()]
-  if current then panX, panY = (current.mapX or 0) * 0.5, (current.mapY or 0) * 0.5 end
+  -- Centraliza no sistema selecionado ou, sem seleção, onde o jogador está
+  local focus = config.Systems[selected or config.WorldState.currentSystemId()]
+  panX, panY = focus and focus.mapX or 0, focus and focus.mapY or 0
   selectSystem(selected)
 end
 
@@ -182,21 +180,26 @@ end
 
 function GalaxyMapUI.isOpen() return open end
 
--- Seleciona um sistema e traça a rota até ele (como o clique no mapa)
+-- Seleciona um sistema, traça a rota até ele e centraliza o mapa nele
 function GalaxyMapUI.select(id)
   selectSystem(id)
+  local sys = id and config.Systems[id]
+  if sys then panX, panY = sys.mapX or 0, sys.mapY or 0 end
 end
 
--- Arrastar com o botão esquerdo move o mapa
+-- Arrastar com o botão esquerdo move o mapa. Um clique no vazio (sem
+-- arraste) limpa a seleção quando o botão é solto.
 function GalaxyMapUI.update(dt)
-  if not open then return end
-  if drag and love.mouse.isDown(1) then
-    local mx, my = love.mouse.getPosition()
+  if not open or not drag then return end
+  local mx, my = love.mouse.getPosition()
+  if love.mouse.isDown(1) then
+    if (mx - drag.startX) ^ 2 + (my - drag.startY) ^ 2 > CLICK_SLOP ^ 2 then drag.moved = true end
     local s = scale()
     panX = panX - (mx - drag.x) / s
     panY = panY - (my - drag.y) / s
     drag.x, drag.y = mx, my
   else
+    if not drag.moved and not drag.onNode then selectSystem(nil) end
     drag = nil
   end
 end
@@ -227,7 +230,7 @@ function GalaxyMapUI.mousepressed(mx, my, button)
       if d2 < bestD2 then best, bestD2 = p.id, d2 end
     end
     if best then selectSystem(best) end
-    drag = { x = mx, y = my }
+    drag = { x = mx, y = my, startX = mx, startY = my, moved = false, onNode = best ~= nil }
   end
 end
 
@@ -293,7 +296,6 @@ end
 local function drawNodes()
   nodePoints = {}
   local currentId = config.WorldState.currentSystemId()
-  local mx, my = love.mouse.getPosition()
   love.graphics.setFont(fontLabel)
 
   for id, sys in pairs(config.Systems) do
@@ -303,7 +305,7 @@ local function drawNodes()
       local color = C[knowledge]
 
       if knowledge == "revealed" then
-        -- Losango: um ponto conhecido só pelas coordenadas
+        -- Losango: sistema marcado no mapa, sem visita
         sc(color)
         love.graphics.polygon("line", sx, sy - 7, sx + 7, sy, sx, sy + 7, sx - 7, sy)
         love.graphics.circle("fill", sx, sy, 2)
@@ -332,15 +334,6 @@ local function drawNodes()
       sc(knowledge == "neighbor" and C.textNormal or C.textBright)
       love.graphics.print(sys.name or ("#" .. id), sx + 12, sy - 14)
 
-      -- Coordenadas sob o nome quando o mouse passa por cima ou está selecionado
-      local hovered = (sx - mx) ^ 2 + (sy - my) ^ 2 < 14 * 14
-      if hovered or id == selected then
-        love.graphics.setFont(fontSmall)
-        sc(C.textMuted)
-        love.graphics.print(coords(sys), sx + 12, sy + 1)
-        love.graphics.setFont(fontLabel)
-      end
-
       nodePoints[#nodePoints + 1] = { id = id, sx = sx, sy = sy }
     end
   end
@@ -355,16 +348,10 @@ local function drawMap()
   love.graphics.setScissor()
   rect(mapRect.x, mapRect.y, mapRect.w, mapRect.h, C.border, "line", 6)
 
-  -- Coordenadas do cursor
-  local mx, my = love.mouse.getPosition()
   love.graphics.setFont(fontSmall)
   sc(C.textMuted)
-  local hint = "arraste para mover · roda para zoom"
-  if pointInRect(mx, my, mapRect) then
-    local cx, cy = toMap(mx, my)
-    hint = string.format("cursor: %d, %d    ", cx, cy) .. hint
-  end
-  love.graphics.print(hint, mapRect.x + 8, mapRect.y + mapRect.h - 16)
+  love.graphics.print("clique para selecionar · arraste para mover · roda para zoom",
+    mapRect.x + 8, mapRect.y + mapRect.h - 16)
 end
 
 -- ─────────────────────────────────────────
@@ -395,10 +382,7 @@ local function drawPanel(x, y, w, h)
   local currentId = config.WorldState.currentSystemId()
 
   line(sys.name or ("#" .. selected), fontTitle, C.textActive, 8)
-  line(KNOWLEDGE_LABELS[knowledge] or "", fontSmall, C.textMuted, 10)
-  line("Coordenadas: " .. coords(sys), fontLabel, C.textNormal)
-  local r = math.sqrt((sys.mapX or 0) ^ 2 + (sys.mapY or 0) ^ 2)
-  line(string.format("Distância do núcleo: %d", r), fontLabel, C.textNormal, 12)
+  line(KNOWLEDGE_LABELS[knowledge] or "", fontSmall, C.textMuted, 12)
 
   if knowledge == "visited" then
     local names = {}
