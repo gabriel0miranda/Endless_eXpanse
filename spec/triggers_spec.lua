@@ -73,6 +73,11 @@ describe("Triggers", function()
     assert.are.equal(1, #shown)
     assert.are.equal(1, config.WorldState.triggerCount("c_land"))
   end)
+
+  it("troca {key:action} pela tecla atual da action", function()
+    config.Input.keyFor = function(action) return action == "ui_galaxy_map" and "n" or nil end
+    assert.are.equal("Mapa (N), ajuda (?)", config.Triggers.format("Mapa ({key:ui_galaxy_map}), ajuda ({key:nada})"))
+  end)
 end)
 
 describe("Dados dos gatilhos", function()

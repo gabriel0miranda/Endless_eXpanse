@@ -56,6 +56,9 @@ end
 function WorldManager.newGame(start)
   config.Entities.clear()
   config.WorldState.new(start.starting_systemId, config.Calendar.toSeconds(start.starting_date or {}))
+  for _, systemId in ipairs(start.known_systems or {}) do
+    config.WorldState.reveal(systemId)
+  end
 end
 
 -- Registro de dados simples de um asteroide (ver entities/asteroid.lua)

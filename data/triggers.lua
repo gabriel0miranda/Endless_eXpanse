@@ -13,7 +13,7 @@
 --                 system   id do sistema atual em data/systems.lua
 --                 chance   probabilidade de disparar, de 0 a 1
 --   speaker     quem fala (título da caixa de diálogo)
---   text        a mensagem
+--   text        a mensagem; {key:action} vira a tecla da action (input.lua)
 return {
 ["jiko_departure"] = {
   event = "depart",
@@ -22,7 +22,7 @@ return {
   speaker = "Irmão Jiko",
   text = "Você encontra uma nota adesiva no painel principal da nave:\n\n"
     .. "\"Não deu pra te esperar, o grupo ficou impaciente.\n\n"
-    .. "As coordenadas para o Olho estão no mapa da nave.\n\n"
+    .. "As coordenadas para o Olho estão no mapa da nave ({key:ui_galaxy_map}).\n\n"
     .. "Estarei te esperando.\"",
 },
 }
