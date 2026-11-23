@@ -98,7 +98,10 @@ local handleDepart
 -- Clique em decolar: primeiro as mensagens dos gatilhos de "depart"; a
 -- decolagem só segue depois que o jogador fecha a última
 local function requestDepart()
+    -- Sem painel ativo o update não pede a decolagem de novo; o painel
+    -- central volta para a descrição do local enquanto a mensagem aparece
     activePanel = nil
+    showLocationDesc = true
     local ctx = { landable = playerFlagShip.landedAt and playerFlagShip.landedAt.name }
     config.Triggers.fire("depart", ctx, handleDepart)
 end
