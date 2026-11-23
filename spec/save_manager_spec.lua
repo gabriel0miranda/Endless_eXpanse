@@ -30,3 +30,35 @@ describe("SaveManager.renameItems", function()
     end
   end)
 end)
+
+describe("SaveManager.dropUnknownItems", function()
+  before_each(function()
+    Helper.setup()
+    config.SaveManager = require("managers.save_manager")
+  end)
+
+  it("descarta itens que não existem mais e mantém os outros", function()
+    local data = {
+      world = { systems = { ["1"] = { landables = { Estacao = { market = {
+        items = { ["Unobtainium"] = 50, ["Water"] = 5 },
+        noise = { ["Unobtainium"] = 1.1, ["Water"] = 0.9 },
+        assortment = { { item = "Unobtainium", min = 1, max = 2 }, { item = "Water", min = 1, max = 2 } },
+      } } } } } },
+      player = { properties = { Nave = { ship = true, cargo = { ["Unobtainium"] = 3, ["Water"] = 1 } } } },
+    }
+    local dropped = config.SaveManager.dropUnknownItems(data)
+
+    local market = data.world.systems["1"].landables.Estacao.market
+    assert.are.same({ ["Water"] = 5 }, market.items)
+    assert.are.same({ ["Water"] = 0.9 }, market.noise)
+    assert.are.same({ { item = "Water", min = 1, max = 2 } }, market.assortment)
+    assert.are.same({ ["Water"] = 1 }, data.player.properties.Nave.cargo)
+    assert.are.equal(4, #dropped)
+  end)
+
+  it("não mexe num save só com itens válidos", function()
+    local data = { world = { systems = {} }, player = { properties = { Nave = { cargo = { ["Water"] = 1 } } } } }
+    assert.are.same({}, config.SaveManager.dropUnknownItems(data))
+    assert.are.same({ ["Water"] = 1 }, data.player.properties.Nave.cargo)
+  end)
+end)

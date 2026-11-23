@@ -44,6 +44,48 @@ function SaveManager.renameItems(t, seen)
   end
 end
 
+-- Descarta itens que não existem mais em data/items.lua (removidos do jogo
+-- depois do save), para o save carregar em vez de quebrar no inventário.
+-- Olha só onde o save guarda itens: estoque, flutuação e sortimento dos
+-- mercados e carga das propriedades. Devolve a lista do que foi descartado.
+function SaveManager.dropUnknownItems(data)
+  local dropped = {}
+  local function dropKeys(t, where)
+    for item, value in pairs(t or {}) do
+      if not config.Items[item] then
+        t[item] = nil
+        dropped[#dropped + 1] = where .. ": " .. tostring(item) .. " (" .. tostring(value) .. ")"
+      end
+    end
+  end
+
+  for systemId, sys in pairs(data.world and data.world.systems or {}) do
+    for name, landable in pairs(sys.landables or {}) do
+      local market = landable.market
+      if market then
+        local where = "sistema " .. systemId .. ", " .. name
+        dropKeys(market.items, where)
+        dropKeys(market.noise, where .. " (flutuação)")
+        local kept = {}
+        for _, entry in ipairs(market.assortment or {}) do
+          if config.Items[entry.item] then
+            kept[#kept + 1] = entry
+          else
+            dropped[#dropped + 1] = where .. " (sortimento): " .. tostring(entry.item)
+          end
+        end
+        if market.assortment then market.assortment = kept end
+      end
+    end
+  end
+  for name, property in pairs(data.player and data.player.properties or {}) do
+    dropKeys(property.cargo, "carga de " .. tostring(name))
+  end
+
+  table.sort(dropped)
+  return dropped
+end
+
 local function player()
   return config.Entities.getByTag("player")[1]
 end
@@ -128,6 +170,9 @@ function SaveManager.restore(data)
   end
 
   SaveManager.renameItems(data)
+  for _, entry in ipairs(SaveManager.dropUnknownItems(data)) do
+    print("[save] item inexistente descartado: " .. entry)
+  end
   config.Entities.clear()
   config.WorldState.load(data.world)
 
