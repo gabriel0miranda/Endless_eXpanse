@@ -26,6 +26,10 @@ return {
   name    = "Usina de Água",
   outputs = { ["Water"] = 10 },
 },
+["Silicon Mine"] = {
+  name    = "Mina de Silício",
+  outputs = { ["Silicon"] = 15 },
+},
 ["Hemp Greenhouse"] = {
   name    = "Estufa de Cânhamo",
   inputs = { ["Water"] = 10, ["Phosporus"] = 2, ["Energy Cell"] = 4},
@@ -45,6 +49,11 @@ return {
     { inputs = { ["Gold Ore"] = 6 },                      outputs = { ["Gold Ingot"] = 3 } },
     { inputs = { ["Titanium Ore"] = 4, ["Sulfur"] = 1 },  outputs = { ["Titanium Alloy"] = 1 } },
   },
+},
+["Solar Array"] = {
+  name    = "Painéis Solares",
+  inputs  = { ["Water"] = 4, ["Silicon"] = 2 },
+  outputs = { ["Energy Cell"] = 6 },
 },
 ["Rice Crisp Factory"] = {
   name    = "Fábrica de Biscoito de Arroz",

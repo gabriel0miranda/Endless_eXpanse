@@ -136,6 +136,14 @@ color = {0.1,0.6,0.4,1},
 basePrice = 15
 },
 -- Valores provisórios
+["Silicon"] = {
+name = "Silício",
+rarity = "common",
+category = "good",
+volume = 2,
+color = {90/255, 100/255, 120/255},
+basePrice = 18
+},
 ["Energy Cell"] = {
 name = "Célula de Energia",
 rarity = "uncommon",

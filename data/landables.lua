@@ -25,7 +25,7 @@ return {
 --  },
   market = {
     capacity = 20000,
-    industries = { ["Luxury Colony"] = 2 },  -- data/industries.lua
+    industries = { ["Silicon Mine"] = 1, ["Luxury Colony"] = 2 },  -- data/industries.lua
     stock = {},
   },
 },
@@ -47,8 +47,8 @@ return {
     trade     = {},
   },
   market = {
-    capacity = 20000,
-    industries = { ["Rice Paddies"] = 1, ["Water Plant"] = 2, ["Hemp Greenhouse"] = 1, ["Textile Mill"] = 1, ["Farming Population"] = 2 },  -- data/industries.lua
+    capacity = 30000,
+    industries = { ["Silicon Mine"] = 1, ["Rice Paddies"] = 1, ["Water Plant"] = 2, ["Hemp Greenhouse"] = 1, ["Textile Mill"] = 1, ["Farming Population"] = 2 },  -- data/industries.lua
     stock = {},
   },
 },
@@ -115,6 +115,26 @@ return {
     stock = {},
   },
 },
+["Solar Power Station"] = {
+  name = "Usina Solar",
+  -- Descrição provisória
+  description = "Uma coroa de painéis solares gira rente à estrela vermelha de Flag's Peak. A usina transforma silício e água em células de energia, e os cargueiros que atracam aqui saem carregados para as estufas e cidades dos sistemas vizinhos.",
+  orbitRadius = 1200,
+  orbitAngle  = 1,
+  orbitSpeed  = 0.03,
+  radius = 200,
+  type = "station",
+  color = {230/255, 180/255, 40/255},
+  buttons = {
+    spaceport = { description = "A doca fica na sombra do escudo térmico da estação. Mesmo assim, o casco da nave estala com o calor enquanto os braços mecânicos prendem as amarras." },
+    trade     = {},
+  },
+  market = {
+    capacity = 20000,
+    industries = { ["Solar Array"] = 2 },  -- data/industries.lua
+    stock = {},
+  },
+},
 ["Shipyard"] = {
   name = "Estaleiro",
   description = "O Estaleiro é um lugar bastante pragmático. Elevadores gigantes rotacionam as naves em cada doca, trazendo aquelas escolhidas pelos compradores em um computador falante.",
@@ -172,7 +192,7 @@ return {
   },
   market = {
   capacity = 20000,
-  industries = { ["Iron Mine"] = 1, ["Military Base"] = 1 },  -- data/industries.lua
+  industries = { ["Iron Mine"] = 1, ["Silicon Mine"] = 1, ["Military Base"] = 1 },  -- data/industries.lua
   stock = {},
   },
 },
@@ -215,8 +235,8 @@ return {
     trade     = {}
   },
   market = {
-  capacity = 20000,
-  industries = { ["Rice Paddies"] = 1, ["Water Plant"] = 1, ["Hemp Greenhouse"] = 1, ["Rice Crisp Factory"] = 1, ["Textile Mill"] = 1, ["Pilgrim Hub"] = 1 },  -- data/industries.lua
+  capacity = 30000,
+  industries = { ["Silicon Mine"] = 1, ["Rice Paddies"] = 1, ["Water Plant"] = 1, ["Hemp Greenhouse"] = 1, ["Rice Crisp Factory"] = 1, ["Textile Mill"] = 1, ["Pilgrim Hub"] = 1 },  -- data/industries.lua
   stock = {},
   },
   },
