@@ -23,6 +23,7 @@ return {
       variance = 20,
     },
     asteroidOres = {
+      {item="Silicon", min=0, max=4},
     {item="Iron Ore", min=0, max=10},
     {item="Silver Ore", min=0, max=6},
     {item="Gold Ore", min=0, max=1},
@@ -54,6 +55,7 @@ return {
       variance = 20,
     },
     asteroidOres = {
+      {item="Silicon", min=0, max=4},
       {item="Sulfur", min=1, max=5},
       {item="Iron Ore", min=0, max=3},
     },
@@ -86,6 +88,7 @@ return {
     },
     asteroidCount= 5,
     asteroidOres = {
+      {item="Silicon", min=0, max=4},
       {item="Iron Ore", min=0, max=6},
     },
     landables    = {
@@ -114,6 +117,7 @@ return {
     },
     asteroidCount=22,
     asteroidOres = {
+      {item="Silicon", min=0, max=4},
       {item="Titanium Ore", min=0, max=4},
       {item="Carbon", min=3,max=10},
       {item="Debris", min=4, max=10},
@@ -121,6 +125,7 @@ return {
     landables    = {
       "Iron Ball",
       "Flutura",
+      "Solar Power Station",
     },
     wormholes    = {
       { name = "To The Wall", x=WEST.x, y=WEST.y, toSystem = 3},
@@ -148,6 +153,7 @@ return {
     },
     asteroidCount=42,
     asteroidOres = {
+      {item="Silicon", min=0, max=4},
       {item="Titanium Ore", min=2, max=11},
       {item="Carbon", min=4,max=15},
       {item="Iron Ore", min=4, max=10},

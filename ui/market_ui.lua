@@ -2,7 +2,8 @@
 -- Interface de mercado: o jogador vende itens à estação e compra itens da estação.
 -- Preços de compra  = o que a ESTAÇÃO paga ao jogador (verde)
 -- Preços de venda   = o que a ESTAÇÃO cobra do jogador (vermelho)
--- Itens com ★ são "demanded" — a estação paga mais por eles.
+-- Itens com * são "demanded": as indústrias da estação os consomem, então
+-- costumam valer mais aqui (data/industries.lua).
 
 local MarketUI = {}
 

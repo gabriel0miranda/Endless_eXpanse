@@ -25,10 +25,7 @@ return {
 --  },
   market = {
     capacity = 20000,
-    demanded = {
-        ["Silver Ore"]   = 2.0,
-        ["Cocaine"]      = 3.0,
-    },
+    industries = { ["Silicon Mine"] = 1, ["Luxury Colony"] = 2 },  -- data/industries.lua
     stock = {},
   },
 },
@@ -50,9 +47,8 @@ return {
     trade     = {},
   },
   market = {
-    capacity = 20000,
-    demanded = {
-    },
+    capacity = 30000,
+    industries = { ["Silicon Mine"] = 1, ["Rice Paddies"] = 1, ["Water Plant"] = 2, ["Hemp Greenhouse"] = 1, ["Textile Mill"] = 1, ["Farming Population"] = 2 },  -- data/industries.lua
     stock = {},
   },
 },
@@ -75,8 +71,6 @@ return {
   },
   market = {
     capacity = 20000,
-    demanded = {
-    },
     stock = {},
   },
 },
@@ -96,16 +90,8 @@ return {
   },
   market = {
   capacity = 20000,
-  demanded = {
-  ["Iron Ore"]     = 1.8,
-  ["Silver Ore"]   = 2.0,
-  ["Titanium Ore"] = 2.0,
-  },
-  stock = {
-  { item = "Steel Sheets",   min = 100, max = 500 },
-  { item = "Silver Ingot",   min = 200, max = 800 },
-  { item = "Titanium Alloy", min = 0,   max = 50  },
-  },
+  industries = { ["Smelter"] = 1 },  -- data/industries.lua
+  stock = {},
   },
 },
 ["Metal Refinery"] = {
@@ -125,8 +111,27 @@ return {
   },
   market = {
     capacity = 20000,
-    demanded = {
-    },
+    industries = { ["Steel Mill"] = 1 },  -- data/industries.lua
+    stock = {},
+  },
+},
+["Solar Power Station"] = {
+  name = "Usina Solar",
+  -- Descrição provisória
+  description = "Uma coroa de painéis solares gira rente à estrela vermelha de Flag's Peak. A usina transforma silício e água em células de energia, e os cargueiros que atracam aqui saem carregados para as estufas e cidades dos sistemas vizinhos.",
+  orbitRadius = 1200,
+  orbitAngle  = 1,
+  orbitSpeed  = 0.03,
+  radius = 200,
+  type = "station",
+  color = {230/255, 180/255, 40/255},
+  buttons = {
+    spaceport = { description = "A doca fica na sombra do escudo térmico da estação. Mesmo assim, o casco da nave estala com o calor enquanto os braços mecânicos prendem as amarras." },
+    trade     = {},
+  },
+  market = {
+    capacity = 20000,
+    industries = { ["Solar Array"] = 2 },  -- data/industries.lua
     stock = {},
   },
 },
@@ -187,14 +192,8 @@ return {
   },
   market = {
   capacity = 20000,
-  demanded = {
-  ["Steel Sheets"] = 4.0,
-  ["Titanium Alloy"] = 6.0,
-  ["Gold Ore"] = 2.0,
-  },
-  stock = {
-  { item = "Iron Ore",   min = 500,   max = 1000  },
-  },
+  industries = { ["Iron Mine"] = 1, ["Silicon Mine"] = 1, ["Military Base"] = 1 },  -- data/industries.lua
+  stock = {},
   },
 },
 ["Flutura"] = {
@@ -215,16 +214,8 @@ return {
   },
   market = {
   capacity = 20000,
-  demanded = {
-  ["Cocaine"]     = 2.0,
-  ["Carbon"]      = 1.5,
-  ["Steel Sheets"] = 2.0,
-  },
-  stock = {
-  { item = "Cocaine",   min = 30, max = 500 },
-  { item = "Sulfur",   min = 500, max = 800 },
-  { item = "Water",   min = 30,   max = 100  },
-  },
+  industries = { ["Sulfur Vents"] = 1, ["Hemp Greenhouse"] = 1, ["Cocaine Lab"] = 1, ["Cloud City"] = 1 },  -- data/industries.lua
+  stock = {},
   },
   },
 ["Lilium"] = {
@@ -244,16 +235,9 @@ return {
     trade     = {}
   },
   market = {
-  capacity = 20000,
-  demanded = {
-  ["Titanium Ore"] = 2,
-  ["Phosporus"] = 4,
-  },
-  stock = {
-  { item = "Rice Crisp",   min = 30, max = 500 },
-  { item = "Rice Grain",   min = 500, max = 800 },
-  { item = "Clothing",   min = 30,   max = 100  },
-  },
+  capacity = 30000,
+  industries = { ["Silicon Mine"] = 1, ["Rice Paddies"] = 1, ["Water Plant"] = 1, ["Hemp Greenhouse"] = 1, ["Rice Crisp Factory"] = 1, ["Textile Mill"] = 1, ["Pilgrim Hub"] = 1 },  -- data/industries.lua
+  stock = {},
   },
   },
 }

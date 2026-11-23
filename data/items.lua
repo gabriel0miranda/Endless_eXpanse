@@ -68,8 +68,16 @@ name = "Lingote de Prata",
 rarity = "rare",
 category = "good",
 volume = 5,
-color = {192/255, 192/255, 192/255},
+color = {140/255, 140/255, 148/255},
 basePrice = 260
+},
+["Gold Ingot"] = {
+name = "Lingote de Ouro",
+rarity = "rare",
+category = "good",
+volume = 5,
+color = {1,0.8,0,1},
+basePrice = 290
 },
 ["Debris"] = {
 name = "Detritos",
@@ -118,6 +126,31 @@ category = "food",
 volume = 1,
 color = {1,1,1,1},
 basePrice = 20
+},
+["Hemp"] = {
+name = "Cânhamo",
+rarity = "common",
+category = "good",
+volume = 1,
+color = {0.1,0.6,0.4,1},
+basePrice = 15
+},
+-- Valores provisórios
+["Silicon"] = {
+name = "Silício",
+rarity = "common",
+category = "good",
+volume = 2,
+color = {90/255, 100/255, 120/255},
+basePrice = 18
+},
+["Energy Cell"] = {
+name = "Célula de Energia",
+rarity = "uncommon",
+category = "good",
+volume = 2,
+color = {0.2,0.9,1,1},
+basePrice = 40
 },
 ["Clothing"] = {
 name = "Roupas",

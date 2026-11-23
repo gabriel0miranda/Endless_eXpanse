@@ -14,6 +14,7 @@ function Helper.setup()
       restorePulses = function() end,
     },
     Items = require("data.items"),
+    Industries = require("data.industries"),
     Starts = require("data.starts"),
     Entities = require("entities"),
     InventoryComponent = require("components.inventory"),
@@ -21,6 +22,7 @@ function Helper.setup()
     PropertyComponent = require("components.property"),
     DeepCopy = require("utils.deep_copy"),
   }
+  config.Economy = require("systems.economy")
   config.MarketSystem = require("systems.market")
   config.PlayerEntity = require("entities.player")
 end

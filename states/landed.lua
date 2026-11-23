@@ -438,10 +438,9 @@ function Landed.onEnter()
       return
     end
 
-    -- Gera estoque do mercado na primeira visita
-    print(playerFlagShip.landedAt.name)
+    -- Gera o mercado na primeira visita; nas seguintes, avança a economia
     if playerFlagShip.landedAt and config.Landables[playerFlagShip.landedAt.name].market then
-        config.MarketSystem.generateStock(playerFlagShip.landedAt)
+        config.MarketSystem.openLandable(playerFlagShip.landedAt)
     end
 
     -- Autosave a cada pouso (o mercado já existe, então entra no save)

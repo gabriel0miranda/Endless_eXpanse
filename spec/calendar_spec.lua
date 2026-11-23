@@ -62,8 +62,8 @@ describe("WorldState.resetSystem", function()
     config.WorldState.new(1, 0)
   end)
 
-  it("renova asteroides e mercados, mas mantém a órbita dos planetas", function()
-    config.WorldState.setLandable(1, "Iron Ball", { phase = 1.5, market = { prices = {} } })
+  it("renova os asteroides, mas mantém a órbita e o mercado dos planetas", function()
+    config.WorldState.setLandable(1, "Iron Ball", { phase = 1.5, market = { items = {} } })
     local sys = config.WorldState.system(1)
     sys.asteroids = { { x = 1 } }
     sys.storedAt = 10
@@ -71,7 +71,7 @@ describe("WorldState.resetSystem", function()
     config.WorldState.resetSystem(1)
 
     assert.is_nil(sys.asteroids)
-    assert.is_nil(config.WorldState.landable(1, "Iron Ball").market)
+    assert.is_not_nil(config.WorldState.landable(1, "Iron Ball").market)
     assert.are.equal(1.5, config.WorldState.landable(1, "Iron Ball").phase)
   end)
 

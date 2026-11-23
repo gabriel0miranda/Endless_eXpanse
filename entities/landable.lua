@@ -15,21 +15,26 @@ local function newRecord(star, landable_data)
   return { phase = phase }
 end
 
--- Mercado da entidade: dados fixos vêm de config.Landables; preços e estoque,
--- se a estação já foi visitada, vêm do registro no WorldState.
+-- Mercado da entidade: dados fixos vêm de config.Landables; estoque,
+-- flutuação e hora da última atualização, se a estação já foi visitada, vêm
+-- do registro no WorldState. Os preços são calculados ao pousar
+-- (MarketSystem.openLandable).
 local function buildMarket(landable_data, record)
   local market = {
     generated = false,
     prices = {},
+    data = landable_data.market,
     capacity = landable_data.market and landable_data.market.capacity or 0,
     stock = landable_data.market and landable_data.market.stock or {},
-    demanded = landable_data.market and landable_data.market.demanded or {}
+    -- Itens que as indústrias do local consomem: destacados no MarketUI
+    demanded = landable_data.market and (config.Economy.uses(landable_data.market)) or {}
   }
   local inventory = nil
-  if record.market then
+  if record.market and landable_data.market then
     market.generated = true
-    market.prices = record.market.prices
-    inventory = config.InventoryComponent(record.market.capacity, record.market.items)
+    market.noise = record.market.noise or {}
+    market.updatedAt = record.market.updatedAt  -- nil em saves anteriores à economia
+    inventory = config.InventoryComponent(market.capacity, record.market.items)
   end
   return market, inventory
 end

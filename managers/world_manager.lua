@@ -100,9 +100,9 @@ function WorldManager.storeSystem()
     local record = not l.wormhole and config.WorldState.landable(systemId, l.name)
     if record and l.market and l.market.generated and l.inventory then
       record.market = {
-        capacity = l.inventory.capacity,
-        items    = l.inventory.items,
-        prices   = l.market.prices,
+        items     = l.inventory.items,
+        noise     = l.market.noise,
+        updatedAt = l.market.updatedAt,
       }
     end
   end
@@ -219,8 +219,9 @@ function WorldManager.placeLanded(name)
 end
 
 -- Descanso no landable onde a nave está pousada: o tempo avança até a manhã
--- seguinte e o sistema é montado de novo, com asteroides, NPCs e mercados
--- renovados. Devolve o tempo de jogo dormido, em segundos.
+-- seguinte e o sistema é montado de novo, com asteroides e NPCs renovados.
+-- Os mercados não são sorteados de novo: avançam pelas horas dormidas ao
+-- pousar. Devolve o tempo de jogo dormido, em segundos.
 function WorldManager.rest()
   local ship = config.Entities.with("isFlagShip")[1]
   local place = ship.landedAt.name
