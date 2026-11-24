@@ -192,12 +192,32 @@ local function doSell()
             return true
         end,
         onConfirm = function(_)
-            local ok, err = config.ShipyardSystem.sellShip(player, selectedFleet)
-            if ok then
-                showMsg("Nave vendida por " .. price .. " cr.", C.balPos)
-                selectedFleet = nil
+            local ship = selectedFleet
+            local function sell()
+                local ok, err = config.ShipyardSystem.sellShip(player, ship)
+                if ok then
+                    showMsg("Nave vendida por " .. price .. " cr.", C.balPos)
+                    selectedFleet = nil
+                else
+                    showMsg(err or "Erro ao vender.", C.textSell)
+                end
+            end
+            -- Às vezes o vendedor avisa que o porão ainda tem carga; se não
+            -- avisar, a carga vai junto com a nave.
+            if config.ShipyardSystem.sellerWarnsCargo(ship) then
+                config.DialogueUI.open({
+                    speaker = "Vendedor",
+                    text    = "Ehm, amigo, sua nave está cheia de carga ainda, tem certeza de que não quer mais essas coisas?",
+                    options = {
+                        { label = "Vender nave", value = true },
+                        { label = "Cancelar",    value = false },
+                    },
+                    onConfirm = function(option)
+                        if option and option.value then sell() end
+                    end,
+                })
             else
-                showMsg(err or "Erro ao vender.", C.textSell)
+                sell()
             end
         end,
     })

@@ -71,6 +71,22 @@ function Shipyard.buyShip(player, shipType, customName)
   return true, "Ship bought"
 end
 
+-- A nave tem alguma carga no porão?
+function Shipyard.hasCargo(shipEntity)
+  for _, qty in pairs(shipEntity.cargo or {}) do
+    if qty > 0 then return true end
+  end
+  return false
+end
+
+-- O vendedor lança uma moeda para decidir se avisa que a nave à venda ainda
+-- tem carga. Sem aviso, a carga vai junto com a nave. `roll` (0 a 1) é
+-- opcional e serve aos testes.
+function Shipyard.sellerWarnsCargo(shipEntity, roll)
+  if not Shipyard.hasCargo(shipEntity) then return false end
+  return (roll or love.math.random()) < 0.5
+end
+
 -- Vender a nave ativa passa o posto para outra nave da frota. Sem nave
 -- ativa a decolagem não tem o que montar e o jogo congela.
 function Shipyard.sellShip(player, shipEntity)

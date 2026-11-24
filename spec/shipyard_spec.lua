@@ -33,4 +33,16 @@ describe("Shipyard", function()
     assert.is_false(ok)
     assert.are.same({ "Corélia" }, flagShips())
   end)
+
+  it("o vendedor só avisa da carga quando há carga e a moeda cai do lado do aviso", function()
+    local Shipyard = config.ShipyardSystem
+    assert.is_true(Shipyard.buyShip(player, "PP-2340", "Nova"))
+    local vazia = player.property.properties["Nova"]
+    local cheia = { ship = true, cargo = { Water = 3 } }
+    local zerada = { ship = true, cargo = { Water = 0 } }
+    assert.is_false(Shipyard.sellerWarnsCargo(vazia, 0.1))
+    assert.is_false(Shipyard.sellerWarnsCargo(zerada, 0.1))
+    assert.is_true(Shipyard.sellerWarnsCargo(cheia, 0.1))
+    assert.is_false(Shipyard.sellerWarnsCargo(cheia, 0.9))
+  end)
 end)
