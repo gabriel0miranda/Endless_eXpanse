@@ -98,7 +98,10 @@ local handleDepart
 -- Clique em decolar: primeiro as mensagens dos gatilhos de "depart"; a
 -- decolagem só segue depois que o jogador fecha a última
 local function requestDepart()
+    -- Sem painel ativo o update não pede a decolagem de novo; o painel
+    -- central volta para a descrição do local enquanto a mensagem aparece
     activePanel = nil
+    showLocationDesc = true
     local ctx = { landable = playerFlagShip.landedAt and playerFlagShip.landedAt.name }
     config.Triggers.fire("depart", ctx, handleDepart)
 end
@@ -523,6 +526,9 @@ function Landed.onExit()
     if config.ShipyardUI.isOpen() then
       config.ShipyardUI.close()
     end
+    if config.GalaxyMapUI.isOpen() then
+      config.GalaxyMapUI.close()
+    end
     print("Launched into space")
 end
 
@@ -577,6 +583,17 @@ local function activateButton(key)
 end
 
 function Landed.update(dt)
+    -- O mapa da galáxia abre por cima de tudo, inclusive de diálogos, e
+    -- congela o resto da tela enquanto está aberto
+    if config.Input.state.ui_galaxy_map then
+        config.GalaxyMapUI.toggle()
+        config.Input.consume("ui_galaxy_map")
+    end
+    if config.GalaxyMapUI.isOpen() then
+        config.GalaxyMapUI.update(dt)
+        return
+    end
+
     if config.InventoryUI.isOpen() then
       config.InventoryUI.update(dt)
     end
@@ -626,6 +643,10 @@ end
 
 function Landed.keypressed(key)
   -- Se a UI estiver aberta, ela domina o input
+  if config.GalaxyMapUI.isOpen() then
+    config.GalaxyMapUI.keypressed(key)
+    return
+  end
   if config.TextInputUI.isOpen() then
     config.TextInputUI.keypressed(key)
     return
@@ -683,6 +704,10 @@ end
 
 function Landed.mousepressed(mx, my, button)
     -- Market UI tem prioridade
+    if config.GalaxyMapUI.isOpen() then
+        config.GalaxyMapUI.mousepressed(mx, my, button)
+        return
+    end
     if config.TextInputUI.isOpen() then
         config.TextInputUI.mousepressed(mx, my, button)
         return
@@ -726,6 +751,10 @@ function Landed.mousepressed(mx, my, button)
 end
 
 function Landed.wheelmoved(dx, dy)
+  if config.GalaxyMapUI.isOpen() then
+    config.GalaxyMapUI.wheelmoved(dx, dy)
+    return
+  end
   if config.SelectUI.isOpen() then
     config.SelectUI.wheelmoved(dx, dy)
     return
@@ -859,6 +888,7 @@ function Landed.draw()
 
     config.DialogueUI.draw()
     config.SelectUI.draw()
+    config.GalaxyMapUI.draw()
     love.graphics.setColor(1, 1, 1, 1)
 end
 

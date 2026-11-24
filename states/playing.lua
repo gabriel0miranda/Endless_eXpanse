@@ -48,6 +48,7 @@ end
 -- não existe quando este arquivo é carregado.
 -- update = false: a janela não é atualizada pelo estado playing.
 local MODALS = {
+  { ui = "GalaxyMapUI",     update = true },
   { ui = "MapUI",           update = false },
   { ui = "TextInputUI",     update = false },
   { ui = "SelectUI",        update = true },
@@ -145,6 +146,10 @@ function Playing.update(dt)
   if config.Input.state.ui_map then
     config.MapUI.toggle(playerFlagShip)
   end
+  if config.Input.state.ui_galaxy_map then
+    if config.MapUI.isOpen() then config.MapUI.close() end
+    config.GalaxyMapUI.toggle({ canTarget = true })
+  end
 
   config.TargetingSystem.update(playerFlagShip,dt)
   config.Simulation.advance(dt, simulationStep)
@@ -222,7 +227,9 @@ function Playing.wheelmoved(dx, dy)
 end
 
 function Playing.draw()
-  if config.MapUI.isOpen() then
+  if config.GalaxyMapUI.isOpen() then
+    config.GalaxyMapUI.draw()
+  elseif config.MapUI.isOpen() then
     config.MapUI.draw(playerFlagShip)
   else
     config.RenderingSystem.draw(playerFlagShip, config.Camera)

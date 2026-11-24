@@ -1,3 +1,8 @@
+-- Sistemas estelares.
+--
+-- mapX/mapY: posição no mapa da galáxia (ver data/galaxy.lua). O núcleo fica
+-- em (0, 0) e o leste aponta para +x. Os sistemas atuais ficam no braço dos
+-- Noobi, que segue para o leste até Breath e se aproxima do núcleo.
 local NORTH = {x=0,y=-12000}
 local SOUTH = {x=0,y=12000}
 local WEST = {x=-12000,y=0}
@@ -6,6 +11,8 @@ local EAST = {x=12000,y=0}
 return {
   [1] = {
     name         = "Eagle's Nest",
+    mapX         = -683,
+    mapY         = 674,
     starX        = 0,
     starY        = 0,
     starMass     = 65000,
@@ -40,6 +47,8 @@ return {
 
   [2] = {
     name         = "Softsky",
+    mapX         = -497,
+    mapY         = 726,
     starX        = 0,
     starY        = 0,
     starMass     = 80000,
@@ -73,6 +82,8 @@ return {
 
   [3] = {
     name         = "The Wall",
+    mapX         = -305,
+    mapY         = 740,
     starX        = -3000,
     starY        = 0,
     starMass     = 30000,
@@ -102,6 +113,8 @@ return {
 
   [4] = {
     name         = "Flag's Peak",
+    mapX         = -126,
+    mapY         = 714,
     starX        = 6000,
     starY        = -3000,
     starMass     = 30000,
@@ -138,6 +151,8 @@ return {
 
   [5] = {
     name         = "Passage",
+    mapX         = 32,
+    mapY         = 654,
     starX        = 2000,
     starY        = 2000,
     starMass     = 80000,
@@ -168,5 +183,26 @@ return {
       { name = "To Flag's Peak", x=WEST.x, y=WEST.y, toSystem = 4},
       --{ name = "To Breath", x=EAST.x, y=EAST.y, toSystem = 5},
     },
+  },
+
+  -- O Olho: o sistema mais próximo do núcleo, onde surgiram os Bhikkhus.
+  -- Só o registro, para o mapa; o conteúdo vem depois.
+  [6] = {
+    name         = "The Eye",
+    mapX         = 42,
+    mapY         = -28,
+    starX        = 0,
+    starY        = 0,
+    starMass     = 80000,
+    starColor    = {1,1,1},
+    population = {
+      weights = {},
+      categoryWeights = {},
+      variance = 20,
+    },
+    asteroidCount= 0,
+    asteroidOres = {},
+    landables    = {},
+    wormholes    = {},
   },
 }

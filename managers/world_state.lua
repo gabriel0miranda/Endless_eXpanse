@@ -24,6 +24,8 @@ WorldState.VERSION = 1
 ---@field currentSystemId integer
 ---@field systems table<string, {landables: table<string, table>, asteroids: table[]|nil, storedAt: number|nil}>
 ---@field triggers table<string, integer>
+---@field visited table<string, boolean>
+---@field revealed table<string, boolean>
 
 ---@type WorldStateData
 local state = nil
@@ -38,6 +40,8 @@ function WorldState.new(startingSystemId, startDate)
     currentSystemId = startingSystemId,
     systems         = {},
     triggers        = {},  -- id do gatilho → quantas vezes disparou
+    visited         = { [tostring(startingSystemId)] = true },
+    revealed        = {},  -- sistemas marcados no mapa sem visita
   }
 end
 
@@ -51,6 +55,12 @@ function WorldState.load(data)
   state = data
   state.startDate = state.startDate or 0  -- saves anteriores ao calendário
   state.triggers  = state.triggers or {}  -- saves anteriores aos gatilhos
+  state.revealed  = state.revealed or {}  -- saves anteriores ao mapa
+  if not state.visited then
+    -- Saves anteriores ao mapa: todo sistema com registro foi visitado
+    state.visited = { [tostring(state.currentSystemId)] = true }
+    for key in pairs(state.systems) do state.visited[key] = true end
+  end
 end
 
 function WorldState.time()
@@ -74,6 +84,21 @@ end
 
 function WorldState.setCurrentSystem(systemId)
   state.currentSystemId = systemId
+  state.visited[tostring(systemId)] = true
+end
+
+-- Conhecimento do mapa da galáxia (systems/navigation.lua)
+function WorldState.isVisited(systemId)
+  return state ~= nil and state.visited[tostring(systemId)] == true
+end
+
+-- Sistema marcado no mapa da galáxia sem ter sido visitado
+function WorldState.reveal(systemId)
+  state.revealed[tostring(systemId)] = true
+end
+
+function WorldState.isRevealed(systemId)
+  return state ~= nil and state.revealed[tostring(systemId)] == true
 end
 
 -- Registro de um sistema; criado vazio na primeira visita

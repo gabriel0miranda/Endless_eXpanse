@@ -61,6 +61,9 @@ return {
   starting_systemId = 5,
   starting_date = { year = 750, month = 1, day = 1, hour = 6 },
   starting_place = "Lilium",
+  -- Sistemas que aparecem no mapa da galáxia desde o início, sem visita
+  -- (o Olho, que o irmão Jiko deixou marcado no mapa da nave)
+  known_systems = { 6 },
 -- Se não tiver starting place
 -- x = 400,
 -- y = 300,

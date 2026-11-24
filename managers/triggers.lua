@@ -41,6 +41,15 @@ function Triggers.matching(event, ctx)
   return list
 end
 
+-- Troca `{key:action}` no texto pela tecla ligada à action (ver input.lua),
+-- para a mensagem acompanhar o remapeamento de controles
+function Triggers.format(text)
+  return (text:gsub("{key:([%w_]+)}", function(action)
+    local key = config.Input.keyFor and config.Input.keyFor(action)
+    return key and key:upper() or "?"
+  end))
+end
+
 -- Mostra os gatilhos do evento um depois do outro e chama `continue` no fim.
 -- Um gatilho conta como disparado quando o jogador fecha a mensagem.
 -- Devolve true se alguma mensagem apareceu.
@@ -56,7 +65,7 @@ function Triggers.fire(event, ctx, continue)
     end
     config.DialogueUI.open({
       speaker   = entry.trigger.speaker,
-      text      = entry.trigger.text,
+      text      = Triggers.format(entry.trigger.text),
       onConfirm = function()
         config.WorldState.markTrigger(entry.id)
         nextMessage()

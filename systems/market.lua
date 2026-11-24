@@ -136,9 +136,6 @@ function Market.calculateBalance(trader, offering, requesting)
         local price = trader.market.prices and trader.market.prices[r.item]
         balance = balance - (price and price.sell or 0) * r.qty
     end
-    if config.Input.state.debugFlag then
-      print("BALANCE: "..balance)
-    end
     return balance
 end
 

@@ -129,6 +129,7 @@ local action_types = {
     ui_comm             = "pulse",
     ui_search           = "pulse",
     ui_map              = "pulse",
+    ui_galaxy_map       = "pulse",
     target_next         = "pulse",
     target_prev         = "pulse",
     target_clear        = "pulse",
@@ -198,6 +199,7 @@ local default_bindings = {
         ["escape"]      = "ui_cancel",
         ["x"]           = "ui_search",
         ["m"]           = "ui_map",
+        ["n"]           = "ui_galaxy_map",
         ["f4"]          = "ui_mainmenu",
         ["t"]           = "ui_comm",
         ["/"]           = "target_next",
@@ -276,6 +278,7 @@ local context_defs = {
             orbitTarget=true, escortTarget=true, fleeTarget=true,
             landOnTarget=true,target_next=true,target_prev=true,
             target_clear=true, ui_comm=true, ui_search=true, ui_map=true,
+            ui_galaxy_map=true,
         },
     },
 
@@ -320,6 +323,15 @@ local context_defs = {
         },
     },
 
+    -- Mapa da galáxia: abre em voo, pousado e por cima de diálogos
+    galaxymap = {
+        bubble = false,
+        actions = {
+            ui_cancel=true, ui_galaxy_map=true,
+            meta_debug=true,
+        },
+    },
+
     shipyard = {
         bubble = true,
         actions = {
@@ -347,7 +359,7 @@ local context_defs = {
         actions = {
             ui_confirm=true, ui_cancel=true,
             ui_up=true, ui_down=true, ui_left=true, ui_right=true,
-            ui_inventory=true,
+            ui_inventory=true, ui_galaxy_map=true,
             meta_debug=true,
         },
     },
@@ -388,6 +400,7 @@ local context_defs = {
         ui_cancel = true,
         ui_up = true,
         ui_down = true,
+        ui_galaxy_map = true,  -- o mapa abre por cima da mensagem
       },
     },
 
@@ -664,6 +677,18 @@ function input.restorePulses(hidden)
     for action in pairs(hidden) do
         input.state[action] = true
     end
+end
+
+-- Tecla do teclado ligada a uma action, para mostrar ao jogador (a mais
+-- curta, em ordem alfabética no empate); nil se não há tecla
+function input.keyFor(action)
+    local best
+    for key, bound in pairs(bindings.keyboard) do
+        if bound == action and (not best or #key < #best or (#key == #best and key < best)) then
+            best = key
+        end
+    end
+    return best
 end
 
 -- Consome um pulse explicitamente (evita que dois sistemas o leiam)
