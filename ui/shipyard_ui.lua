@@ -172,11 +172,11 @@ end
 
 local function doSell()
     if not selectedFleet then return end
-    if selectedFleet.isFlagShip then
+    if selectedFleet.flagShip then
         showMsg("Não é possível vender a nave atual.", C.textDanger)
         return
     end
-    local shipType = selectedFleet.sprite and selectedFleet.sprite.shipType
+    local shipType = selectedFleet.type
     local price    = shipType and config.ShipyardSystem.getSellPrice(shipType) or 0
     local name     = selectedFleet.name or shipType or "?"
 
@@ -331,15 +331,15 @@ local function drawFleetRow(x, y, w, shipEnt, isSelected)
         love.graphics.rectangle("fill", x, y, 2, ROW_H)
     end
 
-    local shipType = shipEnt.sprite and shipEnt.sprite.shipType or "?"
+    local shipType = shipEnt.type or "?"
     local def      = config.Ships[shipType]
     local label    = shipEnt.name or (def and def.name) or shipType
 
-    sc(shipEnt.isFlagShip and C.textActive or (isSelected and C.textBright or C.textNormal))
+    sc(shipEnt.flagShip and C.textActive or (isSelected and C.textBright or C.textNormal))
     love.graphics.setFont(config.smallFont)
     love.graphics.print(label, x + 8, y + 5)
 
-    if shipEnt.isFlagShip then
+    if shipEnt.flagShip then
         sc(C.textMuted)
         love.graphics.printf("ativa", x, y + 5, w - 6, "right")
     elseif def then
@@ -361,7 +361,7 @@ local function drawDetails(x, y, w, h)
     rect(x, y, w, h, C.border, "line")
 
     local shipType = selectedStation
-                  or (selectedFleet and selectedFleet.sprite and selectedFleet.sprite.shipType)
+                  or (selectedFleet and selectedFleet.type)
     local def      = shipType and config.Ships[shipType]
 
     love.graphics.setFont(config.smallFont)
@@ -539,13 +539,13 @@ function ShipyardUI.draw(playerEntity, stationEntity)
     local btnX   = PX + W - PAD
 
     -- Botão Vender (só ativo se tiver frota selecionada não-flagship)
-    if selectedFleet and not selectedFleet.isFlagShip then
+    if selectedFleet and not selectedFleet.flagShip then
         btnX = btnX - 90
         drawActionBtn(btnX, btnY, 86, btnH, "Vender", {0.12,0.04,0.02,1}, C.textSell, doSell)
     end
 
     -- Botão Definir como Ativa (só se frota selecionada não for flagship)
-    if selectedFleet and not selectedFleet.isFlagShip then
+    if selectedFleet and not selectedFleet.flagShip then
         btnX = btnX - 110
         drawActionBtn(btnX, btnY, 106, btnH, "Definir Ativa", C.bgRow, C.borderAccent, doSetFlagship)
     end
@@ -554,7 +554,7 @@ function ShipyardUI.draw(playerEntity, stationEntity)
     if selectedStation then
         local buyX = PX + W - PAD - 90
         -- reposiciona se os outros botões não apareceram
-        if not (selectedFleet and not selectedFleet.isFlagShip) then
+        if not (selectedFleet and not selectedFleet.flagShip) then
             drawActionBtn(buyX, btnY, 86, btnH, "Comprar", {0.08,0.04,0.01,1}, C.borderAccent, doBuy)
         else
             -- não exibe comprar e vender ao mesmo tempo (seleções são mutuamente exclusivas)
