@@ -130,6 +130,7 @@ local action_types = {
     ui_search           = "pulse",
     ui_map              = "pulse",
     ui_galaxy_map       = "pulse",
+    ui_missions         = "pulse",
     target_next         = "pulse",
     target_prev         = "pulse",
     target_clear        = "pulse",
@@ -200,6 +201,7 @@ local default_bindings = {
         ["x"]           = "ui_search",
         ["m"]           = "ui_map",
         ["n"]           = "ui_galaxy_map",
+        ["j"]           = "ui_missions",
         ["f4"]          = "ui_mainmenu",
         ["t"]           = "ui_comm",
         ["/"]           = "target_next",
@@ -278,7 +280,7 @@ local context_defs = {
             orbitTarget=true, escortTarget=true, fleeTarget=true,
             landOnTarget=true,target_next=true,target_prev=true,
             target_clear=true, ui_comm=true, ui_search=true, ui_map=true,
-            ui_galaxy_map=true,
+            ui_galaxy_map=true, ui_missions=true,
         },
     },
 
@@ -332,6 +334,15 @@ local context_defs = {
         },
     },
 
+    -- Diário de missões: abre em voo, pousado e por cima de diálogos
+    missionlog = {
+        bubble = false,
+        actions = {
+            ui_cancel=true, ui_missions=true, ui_galaxy_map=true,
+            meta_debug=true,
+        },
+    },
+
     shipyard = {
         bubble = true,
         actions = {
@@ -359,7 +370,7 @@ local context_defs = {
         actions = {
             ui_confirm=true, ui_cancel=true,
             ui_up=true, ui_down=true, ui_left=true, ui_right=true,
-            ui_inventory=true, ui_galaxy_map=true,
+            ui_inventory=true, ui_galaxy_map=true, ui_missions=true,
             meta_debug=true,
         },
     },
@@ -401,6 +412,7 @@ local context_defs = {
         ui_up = true,
         ui_down = true,
         ui_galaxy_map = true,  -- o mapa abre por cima da mensagem
+        ui_missions = true,    -- o diário de missões também
       },
     },
 

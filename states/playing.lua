@@ -49,6 +49,7 @@ end
 -- update = false: a janela não é atualizada pelo estado playing.
 local MODALS = {
   { ui = "GalaxyMapUI",     update = true },
+  { ui = "MissionLogUI",    update = false },
   { ui = "MapUI",           update = false },
   { ui = "TextInputUI",     update = false },
   { ui = "SelectUI",        update = true },
@@ -150,9 +151,17 @@ function Playing.update(dt)
     if config.MapUI.isOpen() then config.MapUI.close() end
     config.GalaxyMapUI.toggle({ canTarget = true })
   end
+  if config.Input.state.ui_missions then
+    config.MissionLogUI.toggle()
+  end
 
   config.TargetingSystem.update(playerFlagShip,dt)
   config.Simulation.advance(dt, simulationStep)
+
+  -- Missões com prazo vencido falham em voo; o aviso vai para o feed
+  for _, msg in ipairs(config.Missions.checkDeadlines(config.Calendar.now())) do
+    config.CommunicationSystem.pushFeed(msg.text)
+  end
 
   if not playerAlive() then
     config.GameState.switch("dead")
@@ -233,6 +242,9 @@ function Playing.draw()
     config.MapUI.draw(playerFlagShip)
   else
     config.RenderingSystem.draw(playerFlagShip, config.Camera)
+  end
+  if not config.GalaxyMapUI.isOpen() then
+    config.MissionLogUI.draw()
   end
 end
 

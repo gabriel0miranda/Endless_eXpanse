@@ -9,7 +9,10 @@ local RECOVERED_HULL  = 0.10
 -- Fração do hull da nave destruída que vira dano da explosão
 local EXPLOSION_POWER = 0.5
 
-function DamageSystem.apply(entity, shieldDamage, hullDamage)
+-- source: nave que causou o dano (opcional). A última fica em
+-- `lastHitBy`, para saber quem destruiu a nave (missões de caça).
+function DamageSystem.apply(entity, shieldDamage, hullDamage, source)
+  if source then entity.lastHitBy = source end
   if not entity.disabled and entity.shields and entity.shields.currentCapacity > 0 then
     entity.shields.currentCapacity = math.max(entity.shields.currentCapacity-shieldDamage, 0)
     entity.shields.currentCooldown = entity.shields.cooldown
@@ -70,6 +73,9 @@ function DamageSystem.update(dt)
   end
   -- Remove depois do laço: getByTag devolve a mesma lista que Entities.remove altera
   for _, ship in ipairs(destroyed) do
+    for _, msg in ipairs(config.Missions.onShipDestroyed(ship, ship.lastHitBy)) do
+      config.CommunicationSystem.pushFeed(msg.text)
+    end
     config.Entities.remove(ship)
   end
 end

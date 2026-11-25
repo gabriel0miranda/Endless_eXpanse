@@ -33,7 +33,7 @@ local function resolveHit(ship_hash,pulse)
       if entity.mineable then
         config.MiningSystem.damage(entity, pulse.damage.hullDamage)
       elseif pulse.damage then
-        config.DamageSystem.apply(entity, pulse.damage.shieldDamage, pulse.damage.hullDamage)
+        config.DamageSystem.apply(entity, pulse.damage.shieldDamage, pulse.damage.hullDamage, pulse.owner)
       else
         local fn = pulseEffects[pulse.effect]
         if fn then fn(entity, pulse) end

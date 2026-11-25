@@ -3,6 +3,7 @@ return {
     name = "PP-2340",
     price = 1500,
     cargo       = 100,
+    bunks       = 4,  -- beliches para passageiros (data/missions.lua)
     movement    = { linearAcceleration=800, strafeAcceleration=800, angularAcceleration=1200, linearDamping=0.8, angularDampingFactor=0.9 },
     weapons = {[1] = "Photon Cannon", [2] = "Vacuum Machinegun", [3] = "Predator Missile", [4] = "Proximity Mine", [5] = "EMP"},
     generatorPower = 30,
@@ -19,6 +20,7 @@ return {
     name = "GHM-1",
     price = 1800,
     cargo       = 600,
+    bunks       = 2,  -- beliches para passageiros (data/missions.lua)
     movement    = { linearAcceleration=800, strafeAcceleration=800, angularAcceleration=1200, linearDamping=0.8, angularDampingFactor=0.9 },
     weapons = {[1] = "Predator Missile", [2] = "Proximity Mine", [3] = "EMP"},
     generatorPower = 45,
@@ -35,6 +37,7 @@ return {
     name = "O-lopa LTV-1",
     price = 2600,
     cargo       = 300,
+    bunks       = 8,  -- beliches para passageiros (data/missions.lua)
     movement    = { linearAcceleration=1200, strafeAcceleration=900, angularAcceleration=1600, linearDamping=0.8, angularDampingFactor=0.9 },
     weapons = {[1] = "Vacuum Machinegun", [2] = "Proximity Mine"},
     generatorPower = 45,
@@ -51,6 +54,7 @@ return {
     name = "GMT-1",
     price = 1400,
     cargo       = 500,
+    bunks       = 2,  -- beliches para passageiros (data/missions.lua)
     movement    = { linearAcceleration=800, strafeAcceleration=800, angularAcceleration=1200, linearDamping=0.8, angularDampingFactor=0.9 },
     weapons = {[1] = "Mining Laser", [2] = "Predator Missile", [3] = "Proximity Mine"},
     generatorPower = 45,
@@ -67,6 +71,7 @@ return {
     name        = "NN-Interceptor",
     price       = 15000,
     cargo       = 50,
+    bunks       = 1,  -- beliches para passageiros (data/missions.lua)
     movement    = { linearAcceleration=1200, strafeAcceleration=800, angularAcceleration=1600, linearDamping=0.8, angularDampingFactor=0.8 },
     weapons = {[1] = "Photon Cannon", [2] = "Vacuum Machinegun", [3] = "Predator Missile", [4] = "Proximity Mine", [5] = "EMP"},
     generatorPower = 50,
@@ -87,6 +92,7 @@ return {
     name    = "NN-Gunship",
     price   = 40000,
     cargo   = 120,
+    bunks       = 2,  -- beliches para passageiros (data/missions.lua)
     movement = { linearAcceleration=800, strafeAcceleration=500, angularAcceleration=1500, linearDamping=0.6, angularDampingFactor=0.8 },
     weapons = {[1] = "Photon Cannon", [2] = "Vacuum Machinegun", [3] = "Predator Missile", [4] = "Proximity Mine", [5] = "EMP"},
     generatorPower = 500,
@@ -114,6 +120,7 @@ return {
     name    = "NN-Dreadnought",
     price   = 200000,
     cargo   = 2000,
+    bunks       = 12,  -- beliches para passageiros (data/missions.lua)
     movement = { linearAcceleration=300, strafeAcceleration=200, angularAcceleration=300, linearDamping=0.5, angularDampingFactor=0.6 },
     weapons = {[1] = "Photon Cannon", [2] = "Vacuum Machinegun", [3] = "Predator Missile", [4] = "Proximity Mine", [5] = "EMP"},
     generatorPower = 4000,
@@ -151,6 +158,7 @@ return {
     name    = "BAL Gunship",
     price   = 40000,
     cargo   = 120,
+    bunks       = 2,  -- beliches para passageiros (data/missions.lua)
     movement = { linearAcceleration=800, strafeAcceleration=500, angularAcceleration=1500, linearDamping=0.6, angularDampingFactor=0.8 },
     weapons = {[1] = "Photon Cannon", [2] = "Vacuum Machinegun", [3] = "Predator Missile", [4] = "Proximity Mine", [5] = "EMP"},
     generatorPower = 1000,
