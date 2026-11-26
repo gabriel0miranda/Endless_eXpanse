@@ -36,6 +36,11 @@ function Playing.onEnter(params)
     config.Camera.targetX = playerFlagShip.rigidbody.body:getX()
     config.Camera.targetY = playerFlagShip.rigidbody.body:getY()
   end
+  -- Rota traçada no mapa: o próximo salto vira o alvo ao decolar e ao
+  -- chegar por um buraco de minhoca
+  if config.GameState.current == "playing" then
+    config.Navigation.targetNextJump()
+  end
 end
 
 function Playing.onExit()
