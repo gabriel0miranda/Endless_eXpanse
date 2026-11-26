@@ -35,7 +35,7 @@ local function resolveHit(beam)
     if hitEntity.mineable then
       config.MiningSystem.damage(hitEntity, beam.damage.hullDamage*falloff)
     else
-      config.DamageSystem.apply(hitEntity, beam.damage.shieldDamage*falloff, beam.damage.hullDamage*falloff)
+      config.DamageSystem.apply(hitEntity, beam.damage.shieldDamage*falloff, beam.damage.hullDamage*falloff, beam.owner)
     end
   end
 end

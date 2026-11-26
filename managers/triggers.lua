@@ -5,8 +5,8 @@
 -- condições valem aparecem em sequência no DialogueUI; depois da última
 -- mensagem, `continuar` é chamado. Sem gatilho, `continuar` roda na hora.
 --
--- As condições hoje são cenário inicial, landable, sistema e chance. As
--- missões vão entrar como mais uma condição, e o disparo poderá iniciar uma.
+-- As condições hoje são cenário inicial, landable, sistema e chance. Um
+-- gatilho pode iniciar uma missão de história (`startMission`).
 local Triggers = {}
 
 local function playerStart()
@@ -50,29 +50,50 @@ function Triggers.format(text)
   end))
 end
 
--- Mostra os gatilhos do evento um depois do outro e chama `continue` no fim.
--- Um gatilho conta como disparado quando o jogador fecha a mensagem.
--- Devolve true se alguma mensagem apareceu.
-function Triggers.fire(event, ctx, continue)
-  local queue = Triggers.matching(event, ctx)
+-- Mostra as mensagens { speaker, text, onShown? } uma depois da outra no
+-- DialogueUI e chama `continue` depois da última. `onShown` roda quando o
+-- jogador fecha a mensagem. Lista vazia: `continue` roda na hora.
+function Triggers.showMessages(list, continue)
   local i = 0
   local function nextMessage()
     i = i + 1
-    local entry = queue[i]
-    if not entry then
+    local msg = list[i]
+    if not msg then
       if continue then continue() end
       return
     end
     config.DialogueUI.open({
-      speaker   = entry.trigger.speaker,
-      text      = Triggers.format(entry.trigger.text),
+      speaker   = msg.speaker,
+      text      = msg.text,
       onConfirm = function()
-        config.WorldState.markTrigger(entry.id)
+        if msg.onShown then msg.onShown() end
         nextMessage()
       end,
     })
   end
   nextMessage()
+end
+
+-- Mostra os gatilhos do evento um depois do outro e chama `continue` no fim.
+-- Um gatilho conta como disparado quando o jogador fecha a mensagem; se ele
+-- tiver `startMission`, a missão de história começa nesse momento.
+-- Devolve true se alguma mensagem apareceu.
+function Triggers.fire(event, ctx, continue)
+  local queue = Triggers.matching(event, ctx)
+  local list = {}
+  for _, entry in ipairs(queue) do
+    list[#list + 1] = {
+      speaker = entry.trigger.speaker,
+      text    = Triggers.format(entry.trigger.text),
+      onShown = function()
+        config.WorldState.markTrigger(entry.id)
+        if entry.trigger.startMission then
+          config.Missions.startStory(entry.trigger.startMission)
+        end
+      end,
+    }
+  end
+  Triggers.showMessages(list, continue)
   return #queue > 0
 end
 

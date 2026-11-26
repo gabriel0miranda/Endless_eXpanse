@@ -42,7 +42,15 @@ function WorldState.new(startingSystemId, startDate)
     triggers        = {},  -- id do gatilho → quantas vezes disparou
     visited         = { [tostring(startingSystemId)] = true },
     revealed        = {},  -- sistemas marcados no mapa sem visita
+    missions        = WorldState.emptyMissions(),
+    reputation      = {},  -- facção → pontos (systems/missions.lua)
   }
+end
+
+-- Missões (systems/missions.lua): ativas, ofertas dos bares, missões de
+-- história já cumpridas e contador de ids
+function WorldState.emptyMissions()
+  return { active = {}, offers = {}, done = {}, nextId = 1 }
 end
 
 -- Tabela crua do estado, para o save
@@ -56,6 +64,8 @@ function WorldState.load(data)
   state.startDate = state.startDate or 0  -- saves anteriores ao calendário
   state.triggers  = state.triggers or {}  -- saves anteriores aos gatilhos
   state.revealed  = state.revealed or {}  -- saves anteriores ao mapa
+  state.missions  = state.missions or WorldState.emptyMissions()  -- saves anteriores às missões
+  state.reputation = state.reputation or {}
   if not state.visited then
     -- Saves anteriores ao mapa: todo sistema com registro foi visitado
     state.visited = { [tostring(state.currentSystemId)] = true }
@@ -128,6 +138,25 @@ end
 
 function WorldState.markTrigger(id)
   state.triggers[id] = WorldState.triggerCount(id) + 1
+end
+
+-- Tabela das missões: { active = {...}, offers = {...}, nextId = n }
+function WorldState.missions()
+  return state.missions
+end
+
+-- Reputação com uma facção; começa em 0
+function WorldState.reputation(faction)
+  return state and state.reputation[faction] or 0
+end
+
+function WorldState.addReputation(faction, delta)
+  state.reputation[faction] = WorldState.reputation(faction) + delta
+end
+
+-- Todas as reputações, para a interface
+function WorldState.reputations()
+  return state and state.reputation or {}
 end
 
 -- Descanso: os asteroides do sistema voltam a ser gerados na próxima visita.

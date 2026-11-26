@@ -33,7 +33,8 @@ local function resolveHit(ship_hash, ast_hash, mine)
       mine.y,
       mine.range,
       1,1,
-      mine.damage)
+      mine.damage,
+      mine.owner)
     config.Entities.remove(mine)
   end
 end

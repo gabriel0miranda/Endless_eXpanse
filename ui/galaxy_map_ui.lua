@@ -53,6 +53,7 @@ local C = {
   link         = {0.45, 0.30, 0.15, 1},
   route        = {0.99, 0.80, 0.20, 1},
   current      = {0.55, 0.90, 0.75, 1},
+  mission      = {0.95, 0.45, 0.30, 1},
 }
 
 local KNOWLEDGE_LABELS = {
@@ -296,6 +297,7 @@ end
 local function drawNodes()
   nodePoints = {}
   local currentId = config.WorldState.currentSystemId()
+  local missionTargets = config.Missions.targetSystems()
   love.graphics.setFont(fontLabel)
 
   for id, sys in pairs(config.Systems) do
@@ -329,6 +331,12 @@ local function drawNodes()
       if id == selected then
         sc(C.route)
         love.graphics.rectangle("line", sx - 12, sy - 12, 24, 24, 3)
+      end
+      -- Bandeira: sistema-alvo de uma missão ativa
+      if missionTargets[id] then
+        sc(C.mission)
+        love.graphics.line(sx - 8, sy - 8, sx - 8, sy - 22)
+        love.graphics.polygon("fill", sx - 8, sy - 22, sx + 2, sy - 18, sx - 8, sy - 14)
       end
 
       sc(knowledge == "neighbor" and C.textNormal or C.textBright)
@@ -399,6 +407,15 @@ local function drawPanel(x, y, w, h)
     end
     line("Buracos de minhoca para", fontSmall, C.textMuted, 2)
     line(#links > 0 and table.concat(links, ", ") or "nenhum", fontLabel, C.textNormal, 12)
+  end
+
+  local missions = {}
+  for _, m in ipairs(config.Missions.active()) do
+    if config.Missions.targetSystem(m) == selected then missions[#missions + 1] = m.title end
+  end
+  if #missions > 0 then
+    line("Missões", fontSmall, C.textMuted, 2)
+    line(table.concat(missions, "\n"), fontLabel, C.mission, 12)
   end
 
   line("Rota", fontSmall, C.textMuted, 2)

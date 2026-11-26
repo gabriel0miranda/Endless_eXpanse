@@ -80,10 +80,10 @@ local function rollD12(bonus)
   return love.math.random(1, 12) + bonus
 end
 
--- Reputação do player com uma facção (stub simples)
-local function getReputation(player, faction)
-  if not player or not player.reputation then return 0 end
-  return player.reputation[faction] or 0
+-- Reputação do player com uma facção (WorldState, alterada pelas missões)
+local function getReputation(_, faction)
+  if not faction then return 0 end
+  return config.WorldState.reputation(faction)
 end
 
 -- Nome de exibição de uma entidade

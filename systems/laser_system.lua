@@ -36,7 +36,7 @@ local function resolveHit(laser)
     if hitEntity.mineable then
       config.MiningSystem.damage(hitEntity, laser.damage.hullDamage*falloff)
     else
-      config.DamageSystem.apply(hitEntity, laser.damage.shieldDamage*falloff, laser.damage.hullDamage*falloff)
+      config.DamageSystem.apply(hitEntity, laser.damage.shieldDamage*falloff, laser.damage.hullDamage*falloff, laser.owner)
     end
   end
 end

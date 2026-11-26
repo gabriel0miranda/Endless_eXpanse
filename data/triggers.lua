@@ -14,12 +14,15 @@
 --                 chance   probabilidade de disparar, de 0 a 1
 --   speaker     quem fala (título da caixa de diálogo)
 --   text        a mensagem; {key:action} vira a tecla da action (input.lua)
+--   startMission opcional: chave de uma missão de história em
+--               data/missions.lua, iniciada quando o jogador fecha a mensagem
 return {
 ["jiko_departure"] = {
   event = "depart",
   once = true,
   conditions = { start = "Lost Peregrine", landable = "Lilium" },
   speaker = "Irmão Jiko",
+  startMission = "reach_eye",
   text = "Você encontra uma nota adesiva no painel principal da nave:\n\n"
     .. "\"Não deu pra te esperar, o grupo ficou impaciente.\n\n"
     .. "As coordenadas para o Olho estão no mapa da nave ({key:ui_galaxy_map}).\n\n"

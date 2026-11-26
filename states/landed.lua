@@ -13,6 +13,7 @@ local leftButtons = {}
 local rightButtons= {}
 local mousedx, mousedy
 local showLocationDesc = false  -- true: painel central exibe descrição do local
+local barRows = {}  -- hitboxes das ofertas de missão no painel do bar
 
 -- ─────────────────────────────────────────
 -- Mapeamentos
@@ -448,6 +449,7 @@ function Landed.onEnter()
       playerFlagShip.rigidbody.body:setActive(true)
       config.WorldManager.snapshot = nil
       config.GameState.switch("playing", {resuming=false})
+      config.Triggers.showMessages(config.Missions.onSystemEntered(targetSystem))
       return
     end
 
@@ -456,11 +458,19 @@ function Landed.onEnter()
         config.MarketSystem.openLandable(playerFlagShip.landedAt)
     end
 
+    -- Missões: prazos vencidos e entregas neste landable
+    local missionMessages = config.Missions.onLand(
+        config.WorldState.currentSystemId(), playerFlagShip.landedAt.name, playerFlagShip)
+
     -- Autosave a cada pouso (o mercado já existe, então entra no save)
     config.SaveManager.save()
 
-    -- Mensagens dos gatilhos de pouso; o disparo entra no próximo save
-    config.Triggers.fire("land", { landable = playerFlagShip.landedAt.name })
+    -- Avisos das missões e depois os gatilhos de pouso; o disparo entra no
+    -- próximo save
+    local landedName = playerFlagShip.landedAt.name
+    config.Triggers.showMessages(missionMessages, function()
+        config.Triggers.fire("land", { landable = landedName })
+    end)
 
     -- Constrói botões a partir dos dados do landable
     local allBtns = {}
@@ -529,6 +539,9 @@ function Landed.onExit()
     if config.GalaxyMapUI.isOpen() then
       config.GalaxyMapUI.close()
     end
+    if config.MissionLogUI.isOpen() then
+      config.MissionLogUI.close()
+    end
     print("Launched into space")
 end
 
@@ -565,6 +578,79 @@ local function handleRest()
     })
 end
 
+-- ─────────────────────────────────────────
+-- Trabalhos do bar (systems/missions.lua)
+-- ─────────────────────────────────────────
+
+-- As entregas são dimensionadas pelo espaço livre do porão quando o bar
+-- gera as ofertas do dia
+local function barOffers()
+    local inv = playerFlagShip.inventory
+    return config.Missions.offers(config.WorldState.currentSystemId(),
+        playerFlagShip.landedAt.name, inv.capacity - inv.capacityUsed)
+end
+
+-- Mostra a proposta `index`; Aceitar transforma a oferta em missão ativa
+local function openOffer(index)
+    local offer = barOffers()[index]
+    if not offer then return end
+    config.DialogueUI.open({
+        speaker = offer.title,
+        text    = offer.text,
+        options = {
+            { label = "Aceitar", value = true },
+            { label = "Recusar", value = false },
+        },
+        onConfirm = function(option)
+            if not (option and option.value) then return end
+            local ok, err = config.Missions.accept(config.WorldState.currentSystemId(),
+                playerFlagShip.landedAt.name, index, playerFlagShip)
+            config.DialogueUI.open({
+                speaker = ok and "Missão aceita" or offer.title,
+                text    = ok and config.Triggers.format(
+                    "A missão está no diário de missões ({key:ui_missions}). O destino aparece marcado no mapa da galáxia ({key:ui_galaxy_map}).")
+                    or err,
+            })
+        end,
+    })
+end
+
+-- Lista de trabalhos abaixo da descrição do bar, a partir da altura y
+local function drawBarOffers(y)
+    local x, w = G.textX, G.centerW - L.padX * 2
+    local bottom = G.contentY + G.contentH - 8
+    local rowH = 22
+
+    setColor(C.textMuted)
+    love.graphics.setFont(config.smallFont)
+    love.graphics.print("TRABALHOS", x, y)
+    y = y + L.lineH + 2
+
+    local offers = barOffers()
+    if #offers == 0 then
+        setColor(C.textMuted)
+        love.graphics.print("Ninguém oferece trabalho por aqui hoje.", x, y)
+        return
+    end
+
+    local mx, my = love.mouse.getPosition()
+    for i, offer in ipairs(offers) do
+        if y + rowH > bottom then break end
+        local hov = mx >= x and mx <= x + w and my >= y and my <= y + rowH
+        drawRect(x, y, w, rowH - 2, hov and C.bgBtnHover or C.bgBtn)
+        drawRect(x, y, w, rowH - 2, hov and C.borderAccent or C.border, "line")
+        local label = config.MissionData.jobs[offer.kind].label
+        setColor(C.textActive)
+        love.graphics.print(label, x + 8, y + 3)
+        setColor(hov and C.textBright or C.textNormal)
+        love.graphics.print(offer.title, x + 100, y + 3)
+        local reward = offer.reward .. " cr"
+        love.graphics.print(reward, x + w - 8 - config.smallFont:getWidth(reward), y + 3)
+        barRows[#barRows + 1] = { x = x, y = y, w = w, h = rowH - 2, index = i }
+        y = y + rowH
+    end
+end
+
 local function activateButton(key)
     showLocationDesc = false  -- qualquer botão descarta a descrição inicial
     if key == "trade" and playerFlagShip.landedAt and config.Landables[playerFlagShip.landedAt.name].market then
@@ -591,6 +677,14 @@ function Landed.update(dt)
     end
     if config.GalaxyMapUI.isOpen() then
         config.GalaxyMapUI.update(dt)
+        return
+    end
+    -- O diário de missões também abre por cima de tudo
+    if config.Input.state.ui_missions then
+        config.MissionLogUI.toggle()
+        config.Input.consume("ui_missions")
+    end
+    if config.MissionLogUI.isOpen() then
         return
     end
 
@@ -645,6 +739,10 @@ function Landed.keypressed(key)
   -- Se a UI estiver aberta, ela domina o input
   if config.GalaxyMapUI.isOpen() then
     config.GalaxyMapUI.keypressed(key)
+    return
+  end
+  if config.MissionLogUI.isOpen() then
+    config.MissionLogUI.keypressed(key)
     return
   end
   if config.TextInputUI.isOpen() then
@@ -708,6 +806,10 @@ function Landed.mousepressed(mx, my, button)
         config.GalaxyMapUI.mousepressed(mx, my, button)
         return
     end
+    if config.MissionLogUI.isOpen() then
+        config.MissionLogUI.mousepressed(mx, my, button)
+        return
+    end
     if config.TextInputUI.isOpen() then
         config.TextInputUI.mousepressed(mx, my, button)
         return
@@ -734,6 +836,14 @@ function Landed.mousepressed(mx, my, button)
     end
 
     if button == 1 then
+        -- Clique num trabalho do bar
+        for _, r in ipairs(barRows) do
+            if pointInRect(mx, my, r) then
+                openOffer(r.index)
+                return
+            end
+        end
+
         -- Clique na cena → mostra descrição do local
         if mx >= G.sceneX and mx <= G.sceneX + G.sceneW
         and my >= G.sceneY and my <= G.sceneY + G.sceneH then
@@ -753,6 +863,9 @@ end
 function Landed.wheelmoved(dx, dy)
   if config.GalaxyMapUI.isOpen() then
     config.GalaxyMapUI.wheelmoved(dx, dy)
+    return
+  end
+  if config.MissionLogUI.isOpen() then
     return
   end
   if config.SelectUI.isOpen() then
@@ -863,6 +976,11 @@ function Landed.draw()
         love.graphics.print(line, G.textX, G.textY + (j - 1) * L.lineH)
     end
 
+    barRows = {}
+    if activePanel == "bar" and not showLocationDesc then
+        drawBarOffers(G.textY + (#panelText + 1) * L.lineH)
+    end
+
     -- Barra de status
     local statusY = G.y + G.h - 18
     drawRect(G.x, statusY, G.w, 18, {0.04, 0.02, 0.01, 1})
@@ -888,6 +1006,7 @@ function Landed.draw()
 
     config.DialogueUI.draw()
     config.SelectUI.draw()
+    config.MissionLogUI.draw()
     config.GalaxyMapUI.draw()
     love.graphics.setColor(1, 1, 1, 1)
 end

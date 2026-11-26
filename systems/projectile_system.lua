@@ -4,7 +4,7 @@ local function handle_hit(proj, target)
   if target.mineable then
     config.MiningSystem.damage(target, proj.damage.hullDamage)
   else
-    config.DamageSystem.apply(target, proj.damage.shieldDamage, proj.damage.hullDamage)
+    config.DamageSystem.apply(target, proj.damage.shieldDamage, proj.damage.hullDamage, proj.owner)
   end
   -- Futuramente: target.health, shields, etc.
   config.Entities.remove(proj)

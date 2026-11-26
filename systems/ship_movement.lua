@@ -152,9 +152,14 @@ function ShipMovement.update(playerFlagShip, dt)
   end
 
   for _, npc in ipairs(config.Entities.getByTag("npc")) do
-    if not npc.ship.intent then npc.ship.intent = ShipMovement.newIntent() end
-    if not npc.ship.disabled then
-      applyIntent(npc.ship, dt)
+    -- Nave destruída no passo anterior: o NpcAI remove o NPC logo depois,
+    -- mas o corpo do Box2D já não existe
+    local body = npc.ship.rigidbody and npc.ship.rigidbody.body
+    if body and not body:isDestroyed() then
+      if not npc.ship.intent then npc.ship.intent = ShipMovement.newIntent() end
+      if not npc.ship.disabled then
+        applyIntent(npc.ship, dt)
+      end
     end
   end
 end

@@ -27,7 +27,7 @@ function ExplosionSystem.update(ship_hash,ast_hash,dt)
           local f = falloff(explosion, ship.rigidbody.body:getPosition())
           if f then
             explosion.hit[ship] = true
-            config.DamageSystem.apply(ship, explosion.damage.shieldDamage * f, explosion.damage.hullDamage * f)
+            config.DamageSystem.apply(ship, explosion.damage.shieldDamage * f, explosion.damage.hullDamage * f, explosion.source)
           end
         end
       end
