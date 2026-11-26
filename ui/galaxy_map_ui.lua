@@ -131,25 +131,14 @@ local function buildArms()
   end
 end
 
--- Marca o buraco de minhoca do próximo salto como alvo da nave
-local function targetNextJump()
-  targeted = nil
-  if not (canTarget and route and #route > 1) then return end
-  local name = config.Navigation.wormholeTo(route[1], route[2])
-  -- Buracos de minhoca são entidades "landable" com o campo `wormhole`
-  for _, w in ipairs(config.Entities.getByTag("landable")) do
-    if w.wormhole and w.name == name and config.TargetingSystem.isValidTarget(w) then
-      config.TargetingSystem.current = w
-      config.TargetingSystem.locked  = false
-      targeted = name
-    end
-  end
-end
-
+-- Selecionar um sistema traça a rota até ele; o destino fica guardado
+-- (systems/navigation.lua) e vale depois do salto. Em voo, o próximo salto
+-- vira o alvo da nave.
 local function selectSystem(id)
   selected = id
   route = id and config.Navigation.route(config.WorldState.currentSystemId(), id) or nil
-  targetNextJump()
+  config.Navigation.setCourse(id)
+  targeted = canTarget and config.Navigation.targetNextJump() or nil
 end
 
 -- ─────────────────────────────────────────
@@ -163,6 +152,8 @@ function GalaxyMapUI.open(opts)
   canTarget = opts and opts.canTarget or false
   zoom      = DEFAULT_ZOOM
   drag      = nil
+  -- A rota traçada antes (inclusive em outro sistema) volta selecionada
+  selected  = config.Navigation.course() or selected
   -- Centraliza no sistema selecionado ou, sem seleção, onde o jogador está
   local focus = config.Systems[selected or config.WorldState.currentSystemId()]
   panX, panY = focus and focus.mapX or 0, focus and focus.mapY or 0
@@ -432,6 +423,7 @@ local function drawPanel(x, y, w, h)
     if targeted then
       line("Marcado como alvo da nave.", fontSmall, C.textMuted)
     end
+    line("A rota continua depois de cada salto. Clique no vazio para apagá-la.", fontSmall, C.textMuted)
   end
 end
 

@@ -53,6 +53,54 @@ describe("Navigation", function()
     assert.is_false(config.WorldState.isVisited(2))
     assert.is_false(config.WorldState.isRevealed(6))
   end)
+
+  it("guarda o destino só com rota conhecida e fora do sistema atual", function()
+    local nav = config.Navigation
+    config.WorldState.setCurrentSystem(2)
+    config.WorldState.setCurrentSystem(1)
+    assert.is_nil(nav.setCourse(1))        -- já está lá
+    assert.is_nil(nav.course())
+    assert.is_nil(nav.setCourse(4))        -- rota desconhecida
+    assert.is_nil(nav.course())
+    assert.are.same({ 1, 2, 3 }, nav.setCourse(3))
+    assert.are.equal(3, nav.course())
+    assert.are.equal("To B", nav.nextJump())
+    nav.setCourse(nil)
+    assert.is_nil(nav.course())
+  end)
+
+  it("segue a rota a cada salto e apaga o destino na chegada", function()
+    local nav = config.Navigation
+    config.WorldState.setCurrentSystem(2)
+    config.WorldState.setCurrentSystem(1)
+    nav.setCourse(3)
+    config.WorldState.setCurrentSystem(2)
+    assert.truthy(nav.onSystemEntered(2):find("Próximo: To C", 1, true))
+    assert.are.equal(3, nav.course())
+    config.WorldState.setCurrentSystem(3)
+    assert.truthy(nav.onSystemEntered(3):find("chegou a C", 1, true))
+    assert.is_nil(nav.course())
+    assert.is_nil(nav.onSystemEntered(3))  -- sem rota, sem mensagem
+  end)
+
+  it("perde a rota quando o jogador sai dela por um caminho sem volta", function()
+    local nav = config.Navigation
+    config.WorldState.setCurrentSystem(2)
+    config.WorldState.setCurrentSystem(1)
+    nav.setCourse(3)
+    config.WorldState.setCurrentSystem(5)  -- 5 não tem saída
+    assert.truthy(nav.onSystemEntered(5):find("perdida", 1, true))
+    assert.is_nil(nav.course())
+  end)
+
+  it("o destino entra no save e falta em saves antigos", function()
+    config.WorldState.setCurrentSystem(2)
+    config.WorldState.setCurrentSystem(1)
+    config.Navigation.setCourse(3)
+    assert.are.equal(3, config.WorldState.get().course)
+    config.WorldState.load({ time = 0, currentSystemId = 1, systems = {} })
+    assert.is_nil(config.Navigation.course())
+  end)
 end)
 
 describe("Dados do mapa", function()

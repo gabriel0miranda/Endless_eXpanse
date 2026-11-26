@@ -44,6 +44,7 @@ function WorldState.new(startingSystemId, startDate)
     revealed        = {},  -- sistemas marcados no mapa sem visita
     missions        = WorldState.emptyMissions(),
     reputation      = {},  -- facção → pontos (systems/missions.lua)
+    course          = nil, -- destino da rota traçada no mapa (systems/navigation.lua)
   }
 end
 
@@ -100,6 +101,15 @@ end
 -- Conhecimento do mapa da galáxia (systems/navigation.lua)
 function WorldState.isVisited(systemId)
   return state ~= nil and state.visited[tostring(systemId)] == true
+end
+
+-- Destino da rota traçada no mapa da galáxia; nil sem rota
+function WorldState.course()
+  return state and state.course
+end
+
+function WorldState.setCourse(systemId)
+  state.course = systemId
 end
 
 -- Sistema marcado no mapa da galáxia sem ter sido visitado

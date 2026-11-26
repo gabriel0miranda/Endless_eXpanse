@@ -87,6 +87,70 @@ function Navigation.route(from, to)
   return nil
 end
 
+-- ─────────────────────────────────────────
+-- Rota traçada (destino guardado no WorldState)
+-- ─────────────────────────────────────────
+--
+-- O destino escolhido no mapa da galáxia continua valendo depois do salto,
+-- do pouso e do save. Ao entrar em cada sistema da rota, o buraco de minhoca
+-- do próximo salto vira o alvo da nave; ao chegar, o destino é apagado.
+
+function Navigation.course()
+  return config.WorldState.course()
+end
+
+-- Traça a rota até `id`. Só guarda o destino se houver rota conhecida e ele
+-- não for o sistema atual; devolve o caminho (ou nil).
+function Navigation.setCourse(id)
+  local current = config.WorldState.currentSystemId()
+  local path = id and id ~= current and Navigation.route(current, id) or nil
+  config.WorldState.setCourse(path and id or nil)
+  return path
+end
+
+-- Nome do buraco de minhoca do próximo salto da rota; nil sem rota
+function Navigation.nextJump()
+  local course = Navigation.course()
+  if not course then return nil end
+  local path = Navigation.route(config.WorldState.currentSystemId(), course)
+  if not path or #path < 2 then return nil end
+  return Navigation.wormholeTo(path[1], path[2]), path
+end
+
+-- Marca o buraco de minhoca do próximo salto como alvo da nave (em voo).
+-- Devolve o nome do buraco de minhoca marcado.
+function Navigation.targetNextJump()
+  local name = Navigation.nextJump()
+  if not name then return nil end
+  -- Buracos de minhoca são entidades "landable" com o campo `wormhole`
+  for _, w in ipairs(config.Entities.getByTag("landable")) do
+    if w.wormhole and w.name == name and config.TargetingSystem.isValidTarget(w) then
+      config.TargetingSystem.current = w
+      config.TargetingSystem.locked  = false
+      return name
+    end
+  end
+  return nil
+end
+
+-- Entrada num sistema: apaga o destino se o jogador chegou e devolve a
+-- mensagem para o feed do HUD (nil sem rota)
+function Navigation.onSystemEntered(id)
+  local course = Navigation.course()
+  if not course then return nil end
+  local name = config.Systems[course] and config.Systems[course].name or ("#" .. course)
+  if course == id then
+    config.WorldState.setCourse(nil)
+    return "Rota concluída: você chegou a " .. name .. "."
+  end
+  local jump, path = Navigation.nextJump()
+  if not jump then
+    config.WorldState.setCourse(nil)
+    return "Rota para " .. name .. " perdida."
+  end
+  return string.format("Rota para %s: %d salto(s). Próximo: %s.", name, #path - 1, jump)
+end
+
 -- Nome do buraco de minhoca de `from` que leva a `to` (vizinhos diretos)
 function Navigation.wormholeTo(from, to)
   for _, w in ipairs(systems()[from].wormholes or {}) do

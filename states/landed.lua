@@ -449,6 +449,8 @@ function Landed.onEnter()
       playerFlagShip.rigidbody.body:setActive(true)
       config.WorldManager.snapshot = nil
       config.GameState.switch("playing", {resuming=false})
+      local routeMessage = config.Navigation.onSystemEntered(targetSystem)
+      if routeMessage then config.CommunicationSystem.pushFeed(routeMessage) end
       config.Triggers.showMessages(config.Missions.onSystemEntered(targetSystem))
       return
     end
